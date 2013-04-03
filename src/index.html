@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JavaScript Profiler</title>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+
+        <script type="text/javascript" src="JsProfiler.js"></script>
+        <script type="text/javascript" src="JsProfiler.HtmlTableGenerator.js"></script>
+        <script type="text/javascript" src="JsProfiler.ConsoleTableGenerator.js"></script>
+		<script type="text/javascript" src="jsProfilerTest.js"></script>
+        
+        <link rel="stylesheet" type="text/css" href="HtmlTableGenerator.css" />
+	</head>
+	<body>
+		<button id="runProfiler">run profiler</button>
+		<script type="text/javascript">
+            
+			var profiler = new JsProfiler(), results;
+			profiler.registerFunction(window, "doSomething", "window");
+			profiler.registerClass(window, "MyClass");
+			profiler.registerObject(obj, "obj");
+			
+			function runProfiler(e) {
+				profiler.reset();
+				profiler.start();
+				doSomething();
+				profiler.stop();
+				results = profiler.getResults();
+				JsProfiler.HtmlTableGenerator.showTable(results);
+				JsProfiler.ConsoleTableGenerator.printResults(results);
+			}
+			
+			document.getElementById("runProfiler").addEventListener("click", runProfiler, false);
+		</script>
+	</body>
+</html>

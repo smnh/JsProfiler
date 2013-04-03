@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JavaScript Profiler Waterfall Chart</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
+		<link rel="stylesheet" type="text/css" href="WaterfallChart.css"/>
+
+		<script type="text/javascript" src="JsProfiler.js"></script>
+		<script type="text/javascript" src="JsProfiler.WaterfallChartGenerator.js"></script>
+		<script type="text/javascript" src="jsProfilerTest.js"></script>
+		<script type="text/javascript">
+			var profiler = new JsProfiler(),
+				rootRecord, wfChart;
+			
+			profiler.registerFunction(window, "doSomething", "window");
+			profiler.registerClass(window, "MyClass");
+			profiler.registerObject(obj, "obj");
+
+			function runProfiler() {
+				profiler.reset();
+				profiler.start();
+				doSomething();
+				profiler.stop();
+				rootRecord = profiler.getRootRecord();
+				wfChart = new JsProfiler.WaterfallChart();
+				wfChart.setResults(rootRecord);
+			}
+		</script>
+	</head>
+	<body onload="runProfiler();">
+		<!-- HTML_BEGIN -->
+		<div class="jsp_wc_container jsp_fillParent">
+			<div class="jsp_wc_curtain jsp_fillParent"></div>
+			<div class="jsp_wc_table">
+				<div class="jsp_wc_timelineOverview">
+					<div class="jsp_wc_rightColumn jsp_wc_row"></div>
+				</div>
+				<div class="jsp_wc_scrollView">
+					<div class="jsp_wc_leftColumn">
+						<div class="jsp_wc_row jsp_wc_recordNamesHeader">Records</div>
+						<div class="jsp_wc_recordNamesBackground">
+							<!-- HTML_EXCLUDE_BEGIN -->
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<!-- HTML_EXCLUDE_END -->
+						</div>
+						<div class="jsp_wc_recordNames">
+							<!-- HTML_EXCLUDE_BEGIN -->
+							<div class="jsp_wc_recordNameContainer">
+								<div class="jsp_wc_row">label 1</div>
+							</div>
+							<div class="jsp_wc_recordNameContainer">
+								<div class="jsp_wc_row">label 2</div>
+								<div class="jsp_wc_recordNameContainer">
+									<div class="jsp_wc_row">label 3</div>
+									<div class="jsp_wc_recordNameContainer">
+										<div class="jsp_wc_row">label 4</div>
+									</div>
+								</div>
+								<div class="jsp_wc_recordNameContainer">
+									<div class="jsp_wc_row">label 5</div>
+								</div>
+								<div class="jsp_wc_recordNameContainer">
+									<div class="jsp_wc_row">label 6</div>
+									<div class="jsp_wc_recordNameContainer">
+										<div class="jsp_wc_row">label 7</div>
+									</div>
+								</div>
+							</div>
+							<div class="jsp_wc_recordNameContainer">
+								<div class="jsp_wc_row">label 8</div>
+								<div class="jsp_wc_recordNameContainer">
+									<div class="jsp_wc_row">label 9</div>
+								</div>
+							</div>
+							<!-- HTML_EXCLUDE_END -->
+						</div>
+					</div>
+					<div class="jsp_wc_rightColumn">
+						<div class="jsp_wc_recordsBackground">
+							<!-- HTML_EXCLUDE_BEGIN -->
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<div class="jsp_wc_row"></div>
+							<!-- HTML_EXCLUDE_END -->
+						</div>
+						<div class="jsp_wc_records">
+							<!-- HTML_EXCLUDE_BEGIN -->
+							<div class="jsp_wc_recordContainer" style="margin-left:50px;">
+								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:60px;"></div>
+							</div>
+							<div class="jsp_wc_recordContainer" style="margin-left:150px;">
+								<div class="jsp_wc_recordBracket"></div>
+								<div class="jsp_wc_foldHandleUnfolded"></div>
+								<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar"></div>
+								<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left: 200px; width:50px;"></div>
+								<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left: 280px; width:30px;"></div>
+								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:100px;"></div>
+								<div class="jsp_wc_recordContainer" style="margin-left:10px;">
+									<div class="jsp_wc_recordBracket"></div>
+									<div class="jsp_wc_foldHandleUnfolded"></div>
+									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:60px;"></div>
+									<div class="jsp_wc_recordContainer" style="margin-left:0">
+										<div class="jsp_wc_recordBracket"></div>
+										<div class="jsp_wc_foldHandleFolded"></div>
+										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:40px;"></div>
+									</div>
+								</div>
+								<div class="jsp_wc_recordContainer" style="margin-left:70px;">
+									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:30px;"></div>
+								</div>
+								<div class="jsp_wc_recordContainer" style="margin-left:200px;">
+									<div class="jsp_wc_recordBracket"></div>
+									<div class="jsp_wc_foldHandleUnfolded"></div>
+									<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar"></div>
+									<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar"
+										 style="left: 80px; width:30px;"></div>
+									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:50px;"></div>
+									<div class="jsp_wc_recordContainer" style="margin-left:80px;">
+										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar"
+											 style="width:30px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="jsp_wc_recordContainer" style="margin-left:270px;">
+								<div class="jsp_wc_recordBracket"></div>
+								<div class="jsp_wc_foldHandleUnfolded"></div>
+								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:40px;"></div>
+								<div class="jsp_wc_recordContainer" style="margin-left:10px;">
+									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:20px;"></div>
+								</div>
+							</div>
+							<!-- HTML_EXCLUDE_END -->
+						</div>
+					</div>
+				</div>
+				<div class="jsp_wc_row jsp_wc_timeline"></div>
+			</div>
+		</div>
+		<!-- HTML_END -->
+	</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script>
+		var interval = null;
+		
+		function doWork() {
+			for (var i = 0; i < 10000000; i++) {
+				Math.pow(7,15);
+			}
+		}
+		function startStop() {
+			if (interval) {
+				window.clearInterval(interval);
+				this.innerText = "start interval";
+			} else {
+				interval = window.setInterval(function() {
+					doWork();
+					window.setTimeout(function() {
+						doWork();
+					}, 600);
+				}, 400);
+				this.innerText = "stop interval";
+			}
+		}
+	</script>
+</head>
+<body>
+	<a href="#" onclick="startStop.call(this); return false;">start interval</a>
+</body>
+</html>
