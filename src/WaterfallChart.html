@@ -25,6 +25,7 @@
 				rootRecord = profiler.getRootRecord();
 				wfChart = new JsProfiler.WaterfallChart();
 				wfChart.setResults(rootRecord);
+				wfChart.show();
 			}
 		</script>
 	</head>
@@ -100,48 +101,92 @@
 						</div>
 						<div class="jsp_wc_records">
 							<!-- HTML_EXCLUDE_BEGIN -->
-							<div class="jsp_wc_recordContainer" style="margin-left:50px;">
-								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:60px;"></div>
+							<div class="jsp_wc_recordContainer">
+								<div class="jsp_wc_record" style="margin-left:8.3333333333%;">
+									<div class="jsp_wc_recordBarsContainer">
+										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:10%;"></div>
+									</div>
+								</div>
 							</div>
-							<div class="jsp_wc_recordContainer" style="margin-left:150px;">
-								<div class="jsp_wc_recordBracket"></div>
-								<div class="jsp_wc_foldHandleUnfolded"></div>
-								<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar"></div>
-								<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left: 200px; width:50px;"></div>
-								<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left: 280px; width:30px;"></div>
-								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:100px;"></div>
-								<div class="jsp_wc_recordContainer" style="margin-left:10px;">
-									<div class="jsp_wc_recordBracket"></div>
-									<div class="jsp_wc_foldHandleUnfolded"></div>
-									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:60px;"></div>
-									<div class="jsp_wc_recordContainer" style="margin-left:0">
+							<div class="jsp_wc_recordContainer">
+								<div class="jsp_wc_record" style="margin-left:25%;">
+									<div class="jsp_wc_containmentTools">
 										<div class="jsp_wc_recordBracket"></div>
-										<div class="jsp_wc_foldHandleFolded"></div>
-										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:40px;"></div>
+										<div class="jsp_wc_foldHandleUnfolded"></div>
+									</div>
+									<div class="jsp_wc_recordBarsContainer">
+										<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar" style="width:51.6666666667%;"></div>
+										<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:58.33%; width:8.333%;"></div>
+										<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:71.67%; width:5%;"></div>
+										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:16.67%;"></div>
 									</div>
 								</div>
-								<div class="jsp_wc_recordContainer" style="margin-left:70px;">
-									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:30px;"></div>
+								<div class="jsp_wc_recordContainer">
+									<div class="jsp_wc_record" style="margin-left:26.67%;">
+										<div class="jsp_wc_containmentTools">
+											<div class="jsp_wc_recordBracket"></div>
+											<div class="jsp_wc_foldHandleUnfolded"></div>
+										</div>
+										<div class="jsp_wc_recordBarsContainer">
+											<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:10%;"></div>
+										</div>
+									</div>
+									<div class="jsp_wc_recordContainer">
+										<div class="jsp_wc_record" style="margin-left:26.67%;">
+											<div class="jsp_wc_containmentTools">
+												<div class="jsp_wc_recordBracket"></div>
+												<div class="jsp_wc_foldHandleFolded"></div>
+											</div>
+											<div class="jsp_wc_recordBarsContainer">
+												<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:6.667%;"></div>
+											</div>
+										</div>
+									</div>
 								</div>
-								<div class="jsp_wc_recordContainer" style="margin-left:200px;">
-									<div class="jsp_wc_recordBracket"></div>
-									<div class="jsp_wc_foldHandleUnfolded"></div>
-									<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar"></div>
-									<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar"
-										 style="left: 80px; width:30px;"></div>
-									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:50px;"></div>
-									<div class="jsp_wc_recordContainer" style="margin-left:80px;">
-										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar"
-											 style="width:30px;"></div>
+								<div class="jsp_wc_recordContainer">
+									<div class="jsp_wc_record" style="margin-left:36.67%;">
+										<div class="jsp_wc_recordBarsContainer">
+											<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:5%;"></div>
+										</div>
+									</div>
+								</div>
+								<div class="jsp_wc_recordContainer">
+									<div class="jsp_wc_record" style="margin-left:58.33%;">
+										<div class="jsp_wc_containmentTools">
+											<div class="jsp_wc_recordBracket"></div>
+											<div class="jsp_wc_foldHandleUnfolded"></div>
+										</div>
+										<div class="jsp_wc_recordBarsContainer">
+											<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar" style="width:18.33%;"></div>
+											<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:71.66%; width:5%;"></div>
+											<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:8.33%;"></div>
+										</div>
+									</div>
+									<div class="jsp_wc_recordContainer">
+										<div class="jsp_wc_record" style="margin-left:71.67%;">
+											<div class="jsp_wc_recordBarsContainer">
+												<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:5%;"></div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
-							<div class="jsp_wc_recordContainer" style="margin-left:270px;">
-								<div class="jsp_wc_recordBracket"></div>
-								<div class="jsp_wc_foldHandleUnfolded"></div>
-								<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:40px;"></div>
-								<div class="jsp_wc_recordContainer" style="margin-left:10px;">
-									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:20px;"></div>
+							<div class="jsp_wc_recordContainer">
+								<div class="jsp_wc_record" style="margin-left:45%;">
+								<div class="jsp_wc_containmentTools">
+									<div class="jsp_wc_recordBracket"></div>
+									<div class="jsp_wc_foldHandleUnfolded"></div>
+								</div>
+								<div class="jsp_wc_recordBarsContainer">
+									<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:6.667%"></div>
+								</div>
+								</div>
+								<div class="jsp_wc_recordContainer">
+									<div class="jsp_wc_record" style="margin-left:46.67%;">
+										<div class="jsp_wc_recordBarsContainer">
+											<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:3.333%"></div>
+										</div>
+									</div>
 								</div>
 							</div>
 							<!-- HTML_EXCLUDE_END -->

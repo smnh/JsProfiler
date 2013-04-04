@@ -44,7 +44,7 @@
     position: absolute;
     z-index: 1;
     opacity: 0.8;
-    left: 201px;
+    left: 200px;
     right: 0;
     top: 19px;
     background-color: #fefefe;
@@ -62,7 +62,7 @@
 
 .jsp_wc_leftColumn {
     position: absolute;
-    width: 200px;
+    width: 199px;
     font-size: 12px;
     background-color: #d5dde5;
 }
@@ -89,7 +89,7 @@
 /***** right column *****/
 
 .jsp_wc_rightColumn {
-    margin-left: 200px;
+    margin-left: 199px;
     border-left: 1px solid #8e8e8e;
     background-color: #ffffff;
     position: relative;
@@ -102,6 +102,7 @@
 .jsp_wc_records {
     position: absolute;
     left: 20px;
+    right: 20px;
     top: 18px;
 }
 
@@ -111,8 +112,20 @@
 
 .jsp_wc_recordContainer {
     position: relative;
+/*
     float:left;
     clear:left;
+*/
+}
+
+.jsp_wc_record {
+    margin-right: auto;
+}
+
+.jsp_wc_containmentTools {
+    position: absolute;
+    top: 0;
+    bottom: 0;
 }
 
 .jsp_wc_recordBracket {
@@ -147,31 +160,30 @@
     border-top: 8px solid #888888;
 }
 
-.jsp_wc_recordBar {
-    -webkit-box-sizing: border-box;
-       -moz-box-sizing: border-box;
-            box-sizing: border-box;
+.jsp_wc_recordBarsContainer {
+    height: 18px;
+}
+
+.jsp_wc_recordBarsContainer .jsp_wc_recordBar {
+    position: absolute;
     top: 4px;
     height: 10px;
     border: 1px solid #dca92e;
     background-color: #f5c34f;
     min-width: 5px;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
 }
 
-.jsp_wc_recordBar.jsp_wc_selfRecordBar {
-    position: relative;
-    top: 0;
-    margin: 4px 0;
-    /*width: 100%;*/
+.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_selfRecordBar {
+    
 }
 
-.jsp_wc_recordBar.jsp_wc_asyncRecordBar {
-    position: absolute;
+.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_asyncRecordBar {
     opacity: 0.4;
-    width: 100%;
 }
 
-.jsp_wc_recordBar.jsp_wc_asyncCPURecordBar {
-    position: absolute;
-    opacity: 0.4;
+.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_asyncCPURecordBar {
+    opacity: 0.6;
 }

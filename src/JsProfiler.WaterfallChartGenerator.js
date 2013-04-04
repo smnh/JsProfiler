@@ -1,12 +1,13 @@
 (function () {
 
 	var styleElement = null,
-		dev = true;
+		dev = true,
+		utils;
 
 	function WaterfallChart() {
 		this._recordsArray = null;
 		this._shown = dev;
-		this._finalTime = 0;
+		this._totalDuration = 0;
 		this._element = null;
 		this._elements = {};
 		this._generate();
@@ -16,7 +17,40 @@
 	
 	WaterfallChart.prototype = {
 		constructor: WaterfallChart,
-		
+
+		/**
+		 * Sets a JsProfiler.Record as a root record of the waterfall chart.
+		 *
+		 * @example
+		 * wfChart = new JsProfiler.WaterfallChart();
+		 * wfChart.setResults(jsProfiler.getRootRecord());
+		 * wfChart.show();
+		 *
+		 * @param {JsProfiler.Record} rootRecord
+		 */
+		setResults: function (rootRecord) {
+			var i, record, wcRecord;
+
+			this._recordsArray = [];
+			this._absoluteStart = rootRecord.start;
+			this._totalDuration = rootRecord.end - rootRecord.start;
+
+			for (i = 0; i < rootRecord.children.length; i++) {
+				record = rootRecord.children[i];
+				wcRecord = this._processRecord(record);
+				this._recordsArray.push(wcRecord);
+			}
+		},
+
+		/**
+		 * Shows the waterfall chart.
+		 */
+		show: function () {
+			// TODO: TBD
+			this._shown = true;
+			this._createRootRecordViews();
+		},
+
 		_generate: function() {
 			this._createElement();
 			this._addStyleElement();
@@ -60,30 +94,11 @@
 
 			document.getElementsByTagName("head")[0].appendChild(styleElement);
 		},
-		
-		setResults: function (rootRecord) {
-			var i, finalTime = 0, record, wcRecord;
-			
-			this._recordsArray = [];
-			
-			for (i = 0; i < rootRecord.children.length; i++) {
-				record = rootRecord.children[i];
-				wcRecord = this._processRecord(record);
-				this._recordsArray.push(wcRecord);
-				if (wcRecord.asyncEnd > finalTime) {
-					finalTime = wcRecord.asyncEnd;
-				}
-			}
-			
-			this._finalTime = finalTime;
-			
-			this._update();
-		},
-		
+
 		_processRecord: function (record) {
 			var i, wcRecord, childWcRecord;
 
-			wcRecord = new WaterfallChart.WCRecord(record);
+			wcRecord = new WaterfallChart.WCRecord(record, this._absoluteStart);
 
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
@@ -106,8 +121,8 @@
 			return wcRecord;
 		},
 		
-		_update: function () {
-			var wcRecordView;
+		_createRootRecordViews: function () {
+			var wcRecord, wcRecordView;
 			
 			if (!this._shown) {
 				return;
@@ -115,15 +130,13 @@
 
 			this._elements.recordNames.innerHTML = "";
 			this._elements.records.innerHTML = "";
-
+			
 			for (var i = 0; i < this._recordsArray.length; i++) {
-				wcRecordView = new WaterfallChart.WCRecordView(this._recordsArray[i]);
-				wcRecordView.delegate = this;
-
+				wcRecord = this._recordsArray[i];
+				wcRecordView = this._createWcRecordView(wcRecord);
+				
 				this._elements.records.appendChild(wcRecordView.recordContainerElm);
 				this._elements.recordNames.appendChild(wcRecordView.recordNameContainerElm);
-
-				this._addBackgroundRows();
 			}
 		},
 
@@ -139,29 +152,36 @@
 			
 			for (i = 0; i < wcRecord.children.length; i++) {
 				childWcRecord = wcRecord.children[i];
-				childWcRecordView = new WaterfallChart.WCRecordView(childWcRecord);
-				childWcRecordView.delegate = this;
+				childWcRecordView = this._createWcRecordView(childWcRecord);
+
 				if (childWcRecord.folded === false) {
 					this._unfoldRecordView(childWcRecordView);
 				}
+				
 				wcRecordView.addChildWcRecordView(childWcRecordView);
-				this._addBackgroundRows();
 			}
 		},
 		
-		_addBackgroundRows: function () {
+		_createWcRecordView: function(wcRecord) {
+			var wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
+			wcRecordView.delegate = this;
+
+			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
+			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, 4));
+			wcRecordView.setDuration(utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
+
+			this._addBackgroundRows();
+			
+			return wcRecordView;
+		},
+		
+		_addBackgroundRows: function() {
 			var div = document.createElement("div");
 			div.className = "jsp_wc_row";
 			this._elements.recordNamesBackground.appendChild(div.cloneNode(true));
 			this._elements.recordsBackground.appendChild(div.cloneNode(true));
 		},
 
-		wcRecordViewFolded: function (wcRecordView) {
-			var wcRecord = wcRecordView.wcRecord;
-			wcRecord.folded = true;
-			this._foldRecord(wcRecord);
-		},
-		
 		_foldRecord: function(wcRecord) {
 			var i;
 			
@@ -178,20 +198,28 @@
 			this._elements.recordsBackground.removeChild(this._elements.recordsBackground.lastChild);
 		},
 		
-		show: function () {
-			this._shown = true;
+		
+		/* 
+		 * WaterfallChart.WCRecordView delegate methods
+		 */
+		
+		wcRecordViewFolded: function (wcRecordView) {
+			var wcRecord = wcRecordView.wcRecord;
+			wcRecord.folded = true;
+			this._foldRecord(wcRecord);
 		}
 	};
 
 	/**
 	 *
 	 * @param {JsProfiler.Record} record
+	 * @param {Number} absoluteStart
 	 * @constructor
 	 */
-	WaterfallChart.WCRecord = function WCRecord(record) {
+	WaterfallChart.WCRecord = function WCRecord(record, absoluteStart) {
 		this.name = record.name;
-		this.start = record.start;
-		this.end = record.end;
+		this.start = record.start - absoluteStart;
+		this.end = record.end - absoluteStart;
 		this.duration = this.end - this.start;
 		this.self = this.duration;
 		this.asyncEnd = this.end;
@@ -236,41 +264,63 @@
 		},
 
 		_generateRecordElement: function(hasChildren, isAsync) {
-			var recordBracket, asyncRecordBar, selfRecordBar;
+			var containmentTools, recordBracket, recordBarsContainer;
 			
-			this.recordContainerElm = document.createElement("div");
-			this.recordContainerElm.className = "jsp_wc_recordContainer";
+			this.recordElm = document.createElement("div");
+			this.recordElm.className = "jsp_wc_record";
 
 			if (hasChildren) {
+				containmentTools = document.createElement("div");
+				containmentTools.className = "jsp_wc_containmentTools";
+				
 				recordBracket = document.createElement("div");
 				recordBracket.className = "jsp_wc_recordBracket";
-				this.recordContainerElm.appendChild(recordBracket);
+				containmentTools.appendChild(recordBracket);
 
 				this.foldHandleElm = document.createElement("div");
 				this.foldHandleElm.className = "jsp_wc_foldHandleFolded";
 				this.foldHandleElm.addEventListener("click", this, false);
-				this.recordContainerElm.appendChild(this.foldHandleElm);
+				containmentTools.appendChild(this.foldHandleElm);
+				
+				this.recordElm.appendChild(containmentTools);
 			} else {
 				this.foldHandleElm = null;
 			}
-
+			
+			recordBarsContainer = document.createElement("div");
+			recordBarsContainer.className = "jsp_wc_recordBarsContainer";
+			
 			if (isAsync) {
-				asyncRecordBar = document.createElement("div");
-				asyncRecordBar.className = "jsp_wc_recordBar jsp_wc_asyncRecordBar";
-				this.recordContainerElm.appendChild(asyncRecordBar);
+				this.asyncRecordBarElm = document.createElement("div");
+				this.asyncRecordBarElm.className = "jsp_wc_recordBar jsp_wc_asyncRecordBar";
+				recordBarsContainer.appendChild(this.asyncRecordBarElm);
+			} else {
+				this.asyncRecordBarElm = null;
 			}
 
-			selfRecordBar = document.createElement("div");
-			selfRecordBar.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";
-			this.recordContainerElm.appendChild(selfRecordBar);
+			this.selfRecordBarElm = document.createElement("div");
+			this.selfRecordBarElm.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";
+			recordBarsContainer.appendChild(this.selfRecordBarElm);
+			
+			this.recordElm.appendChild(recordBarsContainer);
+
+			this.recordContainerElm = document.createElement("div");
+			this.recordContainerElm.className = "jsp_wc_recordContainer";
+			this.recordContainerElm.appendChild(this.recordElm);
 		},
 		
 		setStartPosition: function(start) {
-			this.recordNameContainerElm.style.marginLeft = left;
+			this.recordElm.style.marginLeft = start;
+		},
+		
+		setAsyncDuration: function(asyncDuration) {
+			if (this.asyncRecordBarElm !== null) {
+				this.asyncRecordBarElm.style.width = asyncDuration;
+			}
 		},
 		
 		setDuration: function(duration) {
-			
+			this.selfRecordBarElm.style.width = duration;
 		},
 		
 		addChildWcRecordView: function(childWcRecordView) {
@@ -321,6 +371,14 @@
 			if (event.target === this.foldHandleElm) {
 				this.toggle();
 			}
+		}
+	};
+	
+	utils = {
+		percentWithDecimalPlaces: function(number, decimalPlaces) {
+			var multiplier = Math.pow(10, decimalPlaces);
+			number = number * 100;
+			return (Math.round(number * multiplier) / multiplier) + "%";
 		}
 	};
 	

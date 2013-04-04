@@ -51,7 +51,7 @@
 				throw new Error("Can't reset profiled data while profiler is running.");
 			}
 			
-			this._leafRecord = new JsProfiler.Record("root", false);
+			this._leafRecord = null;
 			this._recordsStack = [];
 		},
 		
@@ -65,6 +65,7 @@
 			}
 			
 			this._profiling = true;
+			this._leafRecord = new JsProfiler.Record("root", false);
 		},
 		
 		/**
@@ -72,11 +73,16 @@
 		 */
 		stop: function() {
 			
+			if (!this._profiling) {
+				throw new Error("Can't stop profiler, profiler was not started.");
+			}
+			
 			if (this._recordsStack.length !== 0) {
 				throw new Error("Can't stop profiler until all registered functions executed.");
 			}
 			
 			this._profiling = false;
+			this._leafRecord.end = Date.now();
 		},
 
 		/**
@@ -325,9 +331,10 @@
 
 				return result;
 			}
-			
-			for (i = 0; i < this._leafRecord.children.length; i++) {
-				resultArray.push(processRecord(this._leafRecord.children[i]));
+			if (this._leafRecord !== null) {
+				for (i = 0; i < this._leafRecord.children.length; i++) {
+					resultArray.push(processRecord(this._leafRecord.children[i]));
+				}
 			}
 			
 			return resultArray;
