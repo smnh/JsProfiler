@@ -4,6 +4,10 @@
 		dev = true,
 		utils;
 
+	/**
+	 * A Waterfall Chart showing JavaScript Profiling Tool records.
+	 * @constructor
+	 */
 	function WaterfallChart() {
 		this._recordsArray = null;
 		this._shown = dev;
@@ -95,6 +99,12 @@
 			document.getElementsByTagName("head")[0].appendChild(styleElement);
 		},
 
+		/**
+		 * 
+		 * @param {JsProfiler.Record} record
+		 * @returns {WaterfallChart.WCRecord}
+		 * @private
+		 */
 		_processRecord: function (record) {
 			var i, wcRecord, childWcRecord;
 
@@ -161,9 +171,17 @@
 				wcRecordView.addChildWcRecordView(childWcRecordView);
 			}
 		},
-		
+
+		/**
+		 * 
+		 * @param {WaterfallChart.WCRecord} wcRecord
+		 * @returns {WaterfallChart.WCRecordView}
+		 * @private
+		 */
 		_createWcRecordView: function(wcRecord) {
-			var wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
+			var wcRecordView;
+
+			wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
 			wcRecordView.delegate = this;
 
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
@@ -211,7 +229,7 @@
 	};
 
 	/**
-	 *
+	 * 
 	 * @param {JsProfiler.Record} record
 	 * @param {Number} absoluteStart
 	 * @constructor

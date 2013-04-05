@@ -1,5 +1,5 @@
 var fs = require("fs"), i,
-	fileOrder = ["JsProfiler.js", "JsProfiler.HtmlTableGenerator.js", "JsProfiler.ConsoleTableGenerator.js", "JsProfiler.WaterfallChartGenerator.js"],
+	fileOrder = ["JsProfiler.js", "JsProfiler.HtmlTableGenerator.js", "JsProfiler.ConsoleTableGenerator.js", "WaterfallChart.js"],
 	fileLoadCounter = 0;
 	fileContents = {};
 
@@ -47,7 +47,7 @@ for (i = 0; i < fileOrder.length; i++) {
 					fileContents[fileName] = jsData;
 					checkFiles();
 				});
-			} else if (fileName === "JsProfiler.WaterfallChartGenerator.js") {
+			} else if (fileName === "WaterfallChart.js") {
 				console.log("reading WaterfallChart.html ...");
 				fs.readFile("WaterfallChart.html", 'utf8', function (err, htmlData) {
 					if (err) {

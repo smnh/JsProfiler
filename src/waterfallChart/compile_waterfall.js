@@ -1,60 +1,67 @@
 var fs = require("fs"),
-    jsFileName = "JsProfiler.WaterfallChartGenerator.js",
+    jsFileName = "WaterfallChart.js",
     cssFileName = "WaterfallChart.css",
     htmlFileName = "WaterfallChart.html",
+	compiledDir = "./../../compiled/",
+	compiledFileName = "WaterfallChart_compiled.js",
+	encoding = "utf8",
     cssLoaded = false,
     htmlLoaded = false;
 
 console.log("reading " + jsFileName + " ...");
-fs.readFile(jsFileName, 'utf8', function (err, fileData) {
+fs.readFile(jsFileName, encoding, function (err, jsData) {
     
     if (err) {
-        console.log("error while reading " + jsFileName + ": " + err);
+        console.error("error while reading " + jsFileName + ": " + err.message);
         return;
     }
 
     console.log("finished reading " + jsFileName);
 
+	jsData = jsData.replace("dev = true", "dev = false");
+	
     function checkFiles() {
         if (cssLoaded && htmlLoaded) {
-            fs.writeFile("./../jsProfiler.WaterfallChartGenerator.js", fileData, "utf8", function (err) {
+			console.log("writing " + compiledFileName + " ...");
+            fs.writeFile(compiledDir + compiledFileName, jsData, encoding, function (err) {
                 if (err) {
-                    console.log(err);
+                    console.error("error white writing " + compiledFileName + ": " + err.message);
                 } else {
-                    console.log("finished");
+                    console.log("finished writing " + compiledFileName);
                 }
             });
         }
     }
     
     console.log("reading " + cssFileName + " ...");
-    fs.readFile(cssFileName, 'utf8', function (err, cssData) {
+    fs.readFile(cssFileName, encoding, function (err, cssData) {
         
         if (err) {
-            console.log("error while reading " + cssFileName + ": " + err);
+            console.error("error while reading " + cssFileName + ": " + err.message);
             return;
         }
 
         console.log("finished reading " + cssFileName);
+		
         cssData = cssData.replace(/"/g, "\\\"").replace(/\s*\n\s*|\s{2,}|\t/g, " ");
-        fileData = fileData.replace("__CSS__", cssData);
+        jsData = jsData.replace("__CSS__", cssData);
+		
         cssLoaded = true;
         checkFiles();
     });
     
     console.log("reading " + htmlFileName + " ...");
-    fs.readFile(htmlFileName, 'utf8', function (err, htmlData) {
+    fs.readFile(htmlFileName, encoding, function (err, htmlData) {
         
         var startExtractToken = "<!-- HTML_BEGIN -->",
             endExtractToken = "<!-- HTML_END -->",
             startExcludeToken = "<!-- HTML_EXCLUDE_BEGIN -->",
             endExcludeToken = "<!-- HTML_EXCLUDE_END -->",
-//            excludeRegExp = new RegExp(startExcludeToken + "[\\s\\S]*?" + endExcludeToken),
             startExtractIndex, endExtractIndex,
             startExcludeIndex, endExcludeIndex;
         
         if (err) {
-            console.log("error while reading " + htmlFileName + ": " + err);
+            console.error("error while reading " + htmlFileName + ": " + err.message);
             return;
         }
 
@@ -62,22 +69,20 @@ fs.readFile(jsFileName, 'utf8', function (err, fileData) {
         
         startExtractIndex = htmlData.indexOf(startExtractToken);
         if (startExtractIndex > -1) {
-            console.log("startExtractIndex: " + startExtractIndex);
             endExtractIndex = htmlData.indexOf(endExtractToken, startExtractIndex);
             htmlData = htmlData.substring(startExtractIndex + startExtractToken.length, endExtractIndex);
         }
         
         startExcludeIndex = htmlData.indexOf(startExcludeToken);
         while (startExcludeIndex > -1) {
-            console.log("startExcludeIndex: " + startExcludeIndex);
             endExcludeIndex = htmlData.indexOf(endExcludeToken, startExcludeIndex);
-            console.log("endExcludeIndex: " + endExcludeIndex);
             htmlData = htmlData.substring(0, startExcludeIndex) + htmlData.substring(endExcludeIndex + endExcludeToken.length);
             startExcludeIndex = htmlData.indexOf(startExcludeToken);
         }
         
         htmlData = htmlData.replace(/"/g, "\\\"").replace(/\s*\n\s*|\t/g, "");
-        fileData = fileData.replace("__HTML__", htmlData);
+        jsData = jsData.replace("__HTML__", htmlData);
+		
         htmlLoaded = true;
         checkFiles();
     });
