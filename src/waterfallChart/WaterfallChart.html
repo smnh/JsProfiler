@@ -29,11 +29,11 @@
 					doSomething();
 					profiler.removeAsyncContext();
 					
-					if (++count === 3) {
+					if (++count === 2) {
 						window.clearInterval(interval);
 						stopProfiler();
 					}
-				}, 3000);
+				}, 2000);
 				doSomething();
 				profiler.end("setInterval");
 			}
@@ -136,8 +136,8 @@
 									</div>
 									<div class="jsp_wc_recordBarsContainer">
 										<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar" style="width:51.6666666667%;"></div>
-										<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:58.33%; width:8.333%;"></div>
-										<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:71.67%; width:5%;"></div>
+										<div class="jsp_wc_recordBar jsp_wc_childRecordBar" style="left:58.33%; width:8.333%;"></div>
+										<div class="jsp_wc_recordBar jsp_wc_childRecordBar" style="left:71.67%; width:5%;"></div>
 										<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:16.67%;"></div>
 									</div>
 								</div>
@@ -178,7 +178,7 @@
 										</div>
 										<div class="jsp_wc_recordBarsContainer">
 											<div class="jsp_wc_recordBar jsp_wc_asyncRecordBar" style="width:18.33%;"></div>
-											<div class="jsp_wc_recordBar jsp_wc_asyncCPURecordBar" style="left:71.66%; width:5%;"></div>
+											<div class="jsp_wc_recordBar jsp_wc_childRecordBar" style="left:71.66%; width:5%;"></div>
 											<div class="jsp_wc_recordBar jsp_wc_selfRecordBar" style="width:8.33%;"></div>
 										</div>
 									</div>

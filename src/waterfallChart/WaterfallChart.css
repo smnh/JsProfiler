@@ -67,16 +67,16 @@
     background-color: #d5dde5;
 }
 
-.jsp_wc_leftColumn .jsp_wc_recordNamesHeader {
+.jsp_wc_recordNamesHeader {
     font-weight: bold;
     color: #5c6e81;
 }
 
-.jsp_wc_leftColumn .jsp_wc_recordNamesBackground .jsp_wc_row:nth-child(odd) {
+.jsp_wc_recordNamesBackground .jsp_wc_row:nth-child(odd) {
     background-color: #cad1d9;
 }
 
-.jsp_wc_leftColumn .jsp_wc_recordNames {
+.jsp_wc_recordNames {
     position: absolute;
     left: 0;
     top: 18px;
@@ -95,8 +95,12 @@
     position: relative;
 }
 
-.jsp_wc_rightColumn .jsp_wc_recordsBackground {
+.jsp_wc_recordsBackground {
     padding-top: 18px;
+}
+
+.jsp_wc_recordsBackground .jsp_wc_row:nth-child(odd) {
+    background-color: #f2f2f2;
 }
 
 .jsp_wc_records {
@@ -106,16 +110,8 @@
     top: 18px;
 }
 
-.jsp_wc_rightColumn .jsp_wc_row:nth-child(odd) {
-    background-color: #f2f2f2;
-}
-
 .jsp_wc_recordContainer {
     position: relative;
-/*
-    float:left;
-    clear:left;
-*/
 }
 
 .jsp_wc_record {
@@ -166,7 +162,7 @@
     height: 18px;
 }
 
-.jsp_wc_recordBarsContainer .jsp_wc_recordBar {
+.jsp_wc_recordBar {
     position: absolute;
     top: 4px;
     height: 10px;
@@ -178,14 +174,14 @@
             box-sizing: border-box;
 }
 
-.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_selfRecordBar {
+.jsp_wc_recordBar.jsp_wc_selfRecordBar {
     
 }
 
-.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_asyncRecordBar {
+.jsp_wc_recordBar.jsp_wc_asyncRecordBar {
     opacity: 0.4;
 }
 
-.jsp_wc_recordBarsContainer .jsp_wc_recordBar.jsp_wc_asyncCPURecordBar {
+.jsp_wc_recordBar.jsp_wc_childRecordBar {
     opacity: 0.6;
 }

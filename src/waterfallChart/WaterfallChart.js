@@ -119,6 +119,7 @@
 					wcRecord.self -= childWcRecord.duration;
 				} else if (childWcRecord.start >= wcRecord.start) {
 					// Asynchronous child
+					wcRecord.duration += childWcRecord.duration;
 					if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
 						wcRecord.asyncEnd = childWcRecord.end;
 						wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
@@ -165,6 +166,7 @@
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
 			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, 4));
 			wcRecordView.setDuration(utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
+			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, 4));
 
 			this._addBackgroundRow();
 			
@@ -314,7 +316,11 @@
 			} else {
 				this.asyncRecordBarElm = null;
 			}
-
+			
+			this.childRecordBar = document.createElement("div");
+			this.childRecordBar.className = "jsp_wc_recordBar jsp_wc_childRecordBar";
+			recordBarsContainer.appendChild(this.childRecordBar);
+			
 			this.selfRecordBarElm = document.createElement("div");
 			this.selfRecordBarElm.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";
 			recordBarsContainer.appendChild(this.selfRecordBarElm);
@@ -337,7 +343,11 @@
 		},
 		
 		setDuration: function(duration) {
-			this.selfRecordBarElm.style.width = duration;
+			this.childRecordBar.style.width = duration;
+		},
+
+		setSelfDuration: function(selfDuration) {
+			this.selfRecordBarElm.style.width = selfDuration;
 		},
 		
 		addChildWcRecordView: function(childWcRecordView) {
