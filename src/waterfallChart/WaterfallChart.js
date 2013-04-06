@@ -11,12 +11,14 @@
 	 */
 	function WCRecord(record, absoluteStart) {
 		this.name = record.name;
+		this.async = record.async;
 		this.start = record.start - absoluteStart;
 		this.end = record.end - absoluteStart;
 		this.duration = this.end - this.start;
 		this.self = this.duration;
 		this.asyncEnd = this.end;
 		this.asyncDuration = this.duration;
+		this.asyncTimes = [];
 		this.children = [];
 		this.folded = true;
 	}
@@ -129,19 +131,23 @@
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
 				wcRecord.children.push(childWcRecord);
-
-				if (childWcRecord.end <= wcRecord.end) {
+				
+				if (!childWcRecord.async) {
 					// Synchronous child
 					wcRecord.self -= childWcRecord.duration;
-				} else if (childWcRecord.start >= wcRecord.start) {
+				} else  {
 					// Asynchronous child
-					wcRecord.duration += childWcRecord.duration;
-					if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
-						wcRecord.asyncEnd = childWcRecord.asyncEnd;
-						wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
-					}
-				} else {
-					console.warn("Child record has unmatched times");
+					wcRecord.asyncTimes.push({
+						start: childWcRecord.start,
+						duration: childWcRecord.duration
+					});
+				}
+
+				wcRecord.asyncTimes = wcRecord.asyncTimes.concat(childWcRecord.asyncTimes);
+				
+				if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
+					wcRecord.asyncEnd = childWcRecord.asyncEnd;
+					wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
 				}
 			}
 
@@ -174,14 +180,18 @@
 		 * @private
 		 */
 		_createWcRecordView: function(wcRecord) {
-			var wcRecordView;
+			var wcRecordView, i, asyncTime;
 
 			wcRecordView = new WCRecordView(wcRecord);
 			wcRecordView.delegate = this;
 
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
 			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, 4));
-			wcRecordView.setDuration(utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
+			wcRecordView.addChildRecordBar(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4), utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
+			for (i = 0; i < wcRecord.asyncTimes.length; i++) {
+				asyncTime = wcRecord.asyncTimes[i];
+				wcRecordView.addChildRecordBar(utils.percentWithDecimalPlaces(asyncTime.start / this._totalDuration, 4), utils.percentWithDecimalPlaces(asyncTime.duration / this._totalDuration, 4));
+			}
 			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, 4));
 
 			this._addBackgroundRow();
@@ -282,10 +292,14 @@
 			}
 		},
 
-		setDuration: function (duration) {
-			this.childRecordBar.style.width = duration;
+		addChildRecordBar: function(start, duration) {
+			var childRecordBar = document.createElement("div");
+			childRecordBar.className = "jsp_wc_recordBar jsp_wc_childRecordBar";
+			childRecordBar.style.left = start;
+			childRecordBar.style.width = duration;
+			this.selfRecordBarElm.parentNode.insertBefore(childRecordBar, this.selfRecordBarElm);
 		},
-
+		
 		setSelfDuration: function (selfDuration) {
 			this.selfRecordBarElm.style.width = selfDuration;
 		},
@@ -336,10 +350,6 @@
 			} else {
 				this.asyncRecordBarElm = null;
 			}
-			
-			this.childRecordBar = document.createElement("div");
-			this.childRecordBar.className = "jsp_wc_recordBar jsp_wc_childRecordBar";
-			recordBarsContainer.appendChild(this.childRecordBar);
 			
 			this.selfRecordBarElm = document.createElement("div");
 			this.selfRecordBarElm.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";

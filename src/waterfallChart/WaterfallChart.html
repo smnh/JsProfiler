@@ -18,24 +18,35 @@
 			profiler.registerObject(obj, "obj");
 
 			function startProfiler() {
-				var intervalRecord, interval, count = 0;
+				var intervalRecord, interval, count = 0, numOfIntervals = 2, timeoutCount = 0;
 				
 				profiler.reset();
 				profiler.start();
+
+				profiler.begin("synchWrapper");
 				
 				intervalRecord = profiler.begin("setInterval");
 				interval = window.setInterval(function() {
-					profiler.setAsyncContext(intervalRecord);
-					doSomething();
-					profiler.removeAsyncContext();
 					
-					if (++count === 2) {
+					var setTiemoutRecord = profiler.begin("setTiemout", intervalRecord);
+					window.setTimeout(function() {
+						profiler.setAsyncContext(setTiemoutRecord);
+						doSomething();
+						profiler.removeAsyncContext();
+						if (++timeoutCount === numOfIntervals) {
+							stopProfiler();
+						}
+					}, 500);
+					profiler.end("setTiemout");
+					
+					if (++count === numOfIntervals) {
 						window.clearInterval(interval);
-						stopProfiler();
 					}
 				}, 2000);
-				doSomething();
 				profiler.end("setInterval");
+
+				doSomething();
+				profiler.end("synchWrapper");
 			}
 			
 			function stopProfiler() {

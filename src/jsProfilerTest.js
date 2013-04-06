@@ -14,7 +14,7 @@ function work() {
 MyClass.prototype.foo = function foo() {
 	var i;
 	this.bar();
-	for (i = 0; i < 200; i++) {
+	for (i = 0; i < 100; i++) {
 		work();
 	}
 	this.bar();
@@ -22,7 +22,7 @@ MyClass.prototype.foo = function foo() {
 
 MyClass.prototype.bar = function bar() {
 	var i;
-	for (i = 0; i < 200; i++) {
+	for (i = 0; i < 100; i++) {
 		work();
 	}
 };
