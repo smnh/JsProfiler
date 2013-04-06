@@ -5,6 +5,23 @@
 		utils;
 
 	/**
+	 * @param {JsProfiler.Record} record
+	 * @param {Number} absoluteStart
+	 * @constructor
+	 */
+	function WCRecord(record, absoluteStart) {
+		this.name = record.name;
+		this.start = record.start - absoluteStart;
+		this.end = record.end - absoluteStart;
+		this.duration = this.end - this.start;
+		this.self = this.duration;
+		this.asyncEnd = this.end;
+		this.asyncDuration = this.duration;
+		this.children = [];
+		this.folded = true;
+	}
+	
+	/**
 	 * A Waterfall Chart showing JavaScript Profiling Tool records.
 	 * @constructor
 	 */
@@ -16,8 +33,8 @@
 		this._elements = {};
 		this._generate();
 	}
-	
-	this.WaterfallChart = WaterfallChart;
+
+	JsProfiler.WaterfallChart = WaterfallChart;
 	
 	WaterfallChart.prototype = {
 		constructor: WaterfallChart,
@@ -100,15 +117,14 @@
 		},
 
 		/**
-		 * 
 		 * @param {JsProfiler.Record} record
-		 * @returns {WaterfallChart.WCRecord}
+		 * @returns {WCRecord}
 		 * @private
 		 */
 		_processRecord: function (record) {
 			var i, wcRecord, childWcRecord;
 
-			wcRecord = new WaterfallChart.WCRecord(record, this._absoluteStart);
+			wcRecord = new WCRecord(record, this._absoluteStart);
 
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
@@ -153,14 +169,14 @@
 
 		/**
 		 * 
-		 * @param {WaterfallChart.WCRecord} wcRecord
-		 * @returns {WaterfallChart.WCRecordView}
+		 * @param {WCRecord} wcRecord
+		 * @returns {WCRecordView}
 		 * @private
 		 */
 		_createWcRecordView: function(wcRecord) {
 			var wcRecordView;
 
-			wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
+			wcRecordView = new WCRecordView(wcRecord);
 			wcRecordView.delegate = this;
 
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
@@ -230,29 +246,10 @@
 	};
 
 	/**
-	 * 
-	 * @param {JsProfiler.Record} record
-	 * @param {Number} absoluteStart
+	 * @param {WCRecord} wcRecord
 	 * @constructor
 	 */
-	WaterfallChart.WCRecord = function WCRecord(record, absoluteStart) {
-		this.name = record.name;
-		this.start = record.start - absoluteStart;
-		this.end = record.end - absoluteStart;
-		this.duration = this.end - this.start;
-		this.self = this.duration;
-		this.asyncEnd = this.end;
-		this.asyncDuration = this.duration;
-		this.children = [];
-		this.folded = true;
-	};
-
-	/**
-	 *
-	 * @param {WaterfallChart.WCRecord} wcRecord
-	 * @constructor
-	 */
-	WaterfallChart.WCRecordView = function WCRecordView(wcRecord) {
+	function WCRecordView(wcRecord) {
 		
 		var hasChildren = wcRecord.children.length > 0,
 			isAsync = wcRecord.asyncDuration > wcRecord.duration;
@@ -264,12 +261,35 @@
 		
 		this._generateRecordNameElement(wcRecord.name);
 		this._generateRecordElement(hasChildren, isAsync);
-	};
+	}
+	
+	WCRecordView.prototype = {
+		constructor: WaterfallChart,
 
-	WaterfallChart.WCRecordView.prototype = {
-		
-		constructor: WaterfallChart.WCRecordView,
-		
+		/**
+		 * Sets the start position of the record view by applying passed string to the margin-left property of the
+		 * record element.
+		 * 
+		 * @param {String} start The start position of the record in form of CSS length of percentage.
+		 */
+		setStartPosition: function (start) {
+			this.recordElm.style.marginLeft = start;
+		},
+
+		setAsyncDuration: function (asyncDuration) {
+			if (this.asyncRecordBarElm !== null) {
+				this.asyncRecordBarElm.style.width = asyncDuration;
+			}
+		},
+
+		setDuration: function (duration) {
+			this.childRecordBar.style.width = duration;
+		},
+
+		setSelfDuration: function (selfDuration) {
+			this.selfRecordBarElm.style.width = selfDuration;
+		},
+
 		_generateRecordNameElement: function(recordName) {
 			var recordNameElement;
 
@@ -332,24 +352,6 @@
 			this.recordContainerElm.appendChild(this.recordElm);
 		},
 		
-		setStartPosition: function(start) {
-			this.recordElm.style.marginLeft = start;
-		},
-		
-		setAsyncDuration: function(asyncDuration) {
-			if (this.asyncRecordBarElm !== null) {
-				this.asyncRecordBarElm.style.width = asyncDuration;
-			}
-		},
-		
-		setDuration: function(duration) {
-			this.childRecordBar.style.width = duration;
-		},
-
-		setSelfDuration: function(selfDuration) {
-			this.selfRecordBarElm.style.width = selfDuration;
-		},
-		
 		addChildWcRecordView: function(childWcRecordView) {
 			this.childWcRecordViews.push(childWcRecordView);
 			this.recordContainerElm.appendChild(childWcRecordView.recordContainerElm);
@@ -409,4 +411,4 @@
 		}
 	};
 	
-}).apply(JsProfiler);
+}());
