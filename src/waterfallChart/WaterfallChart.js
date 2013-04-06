@@ -137,7 +137,7 @@
 					// Asynchronous child
 					wcRecord.duration += childWcRecord.duration;
 					if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
-						wcRecord.asyncEnd = childWcRecord.end;
+						wcRecord.asyncEnd = childWcRecord.asyncEnd;
 						wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
 					}
 				} else {
