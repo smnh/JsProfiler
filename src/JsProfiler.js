@@ -53,6 +53,7 @@
 			
 			this._leafRecord = null;
 			this._recordsStack = [];
+			this._asyncContextRecordsStack = [];
 		},
 		
 		/**
@@ -96,13 +97,17 @@
 		 */
 		begin: function(recordLabel, asyncContextRecord) {
 
+			var hasAsyncContext, record, parentRecord;
+			
 			if (!this._profiling) {
 				return null;
 			}
 			
-			var hasAsyncContext = (typeof asyncContextRecord !== "undefined"),
-				record,
-				parentRecord;
+			if (typeof asyncContextRecord === "undefined" && this._recordsStack.length === 0 && this._asyncContextRecordsStack.length > 0) {
+				asyncContextRecord = this._asyncContextRecordsStack[this._asyncContextRecordsStack.length - 1];
+			}
+			
+			hasAsyncContext = (typeof asyncContextRecord !== "undefined");
 			
 			if (hasAsyncContext && this._recordsStack.length !== 0) {
 				throw new Error("Can't begin record '" + recordLabel + "' in asynchronous record context '" + asyncContextRecord.name + "' while record stack is not empty.");
@@ -130,7 +135,15 @@
 			this._leafRecord.end = Date.now();
 			this._leafRecord = this._recordsStack.pop();
 		},
-
+		
+		setAsyncContext: function(asyncContextRecord) {
+			this._asyncContextRecordsStack.push(asyncContextRecord);
+		},
+		
+		removeAsyncContext: function() {
+			this._asyncContextRecordsStack.pop();
+		},
+		
 		wait: function(recordLabel) {
 			// TODO
 		},

@@ -114,10 +114,10 @@
 				childWcRecord = this._processRecord(record.children[i]);
 				wcRecord.children.push(childWcRecord);
 
-				if (childWcRecord.end <= record.end) {
+				if (childWcRecord.end <= wcRecord.end) {
 					// Synchronous child
 					wcRecord.self -= childWcRecord.duration;
-				} else if (childWcRecord.start >= record.start) {
+				} else if (childWcRecord.start >= wcRecord.start) {
 					// Asynchronous child
 					if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
 						wcRecord.asyncEnd = childWcRecord.end;
@@ -150,28 +150,6 @@
 			}
 		},
 
-		wcRecordViewUnfolded: function(wcRecordView) {
-			var wcRecord = wcRecordView.wcRecord;
-			wcRecord.folded = false;
-			this._unfoldRecordView(wcRecordView);
-		},
-		
-		_unfoldRecordView: function(wcRecordView) {
-			var i, childWcRecordView, childWcRecord,
-				wcRecord = wcRecordView.wcRecord;
-			
-			for (i = 0; i < wcRecord.children.length; i++) {
-				childWcRecord = wcRecord.children[i];
-				childWcRecordView = this._createWcRecordView(childWcRecord);
-
-				if (childWcRecord.folded === false) {
-					this._unfoldRecordView(childWcRecordView);
-				}
-				
-				wcRecordView.addChildWcRecordView(childWcRecordView);
-			}
-		},
-
 		/**
 		 * 
 		 * @param {WaterfallChart.WCRecord} wcRecord
@@ -188,34 +166,49 @@
 			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, 4));
 			wcRecordView.setDuration(utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
 
-			this._addBackgroundRows();
+			this._addBackgroundRow();
 			
 			return wcRecordView;
 		},
 		
-		_addBackgroundRows: function() {
+		_addBackgroundRow: function() {
 			var div = document.createElement("div");
 			div.className = "jsp_wc_row";
 			this._elements.recordNamesBackground.appendChild(div.cloneNode(true));
 			this._elements.recordsBackground.appendChild(div.cloneNode(true));
 		},
 
+		_removeBackgroundRow: function () {
+			this._elements.recordNamesBackground.removeChild(this._elements.recordNamesBackground.lastChild);
+			this._elements.recordsBackground.removeChild(this._elements.recordsBackground.lastChild);
+		},
+		
 		_foldRecord: function(wcRecord) {
 			var i;
 			
 			for (i = 0; i < wcRecord.children.length; i++) {
-				this._removeBackgroundRows();
+				this._removeBackgroundRow();
 				if (wcRecord.children[i].folded === false) {
 					this._foldRecord(wcRecord.children[i]);
 				}
 			}
 		},
 		
-		_removeBackgroundRows: function () {
-			this._elements.recordNamesBackground.removeChild(this._elements.recordNamesBackground.lastChild);
-			this._elements.recordsBackground.removeChild(this._elements.recordsBackground.lastChild);
+		_unfoldRecordView: function (wcRecordView) {
+			var i, childWcRecordView, childWcRecord,
+				wcRecord = wcRecordView.wcRecord;
+
+			for (i = 0; i < wcRecord.children.length; i++) {
+				childWcRecord = wcRecord.children[i];
+				childWcRecordView = this._createWcRecordView(childWcRecord);
+
+				if (childWcRecord.folded === false) {
+					this._unfoldRecordView(childWcRecordView);
+				}
+
+				wcRecordView.addChildWcRecordView(childWcRecordView);
+			}
 		},
-		
 		
 		/* 
 		 * WaterfallChart.WCRecordView delegate methods
@@ -225,6 +218,12 @@
 			var wcRecord = wcRecordView.wcRecord;
 			wcRecord.folded = true;
 			this._foldRecord(wcRecord);
+		},
+
+		wcRecordViewUnfolded: function (wcRecordView) {
+			var wcRecord = wcRecordView.wcRecord;
+			wcRecord.folded = false;
+			this._unfoldRecordView(wcRecordView);
 		}
 	};
 
@@ -257,7 +256,7 @@
 			isAsync = wcRecord.asyncDuration > wcRecord.duration;
 		
 		this.wcRecord = wcRecord;
-		this.folded = true;
+		this.folded = wcRecord.folded;
 		this.childWcRecordViews = [];
 		this.delegate = null;
 		
@@ -296,7 +295,7 @@
 				containmentTools.appendChild(recordBracket);
 
 				this.foldHandleElm = document.createElement("div");
-				this.foldHandleElm.className = "jsp_wc_foldHandleFolded";
+				this.foldHandleElm.className = this.folded ? "jsp_wc_foldHandleFolded" : "jsp_wc_foldHandleUnfolded";
 				this.foldHandleElm.addEventListener("click", this, false);
 				containmentTools.appendChild(this.foldHandleElm);
 				

@@ -17,19 +17,39 @@
 			profiler.registerClass(window, "MyClass");
 			profiler.registerObject(obj, "obj");
 
-			function runProfiler() {
+			function startProfiler() {
+				var intervalRecord, interval, count = 0;
+				
 				profiler.reset();
 				profiler.start();
+				
+				intervalRecord = profiler.begin("setInterval");
+				interval = window.setInterval(function() {
+					profiler.setAsyncContext(intervalRecord);
+					doSomething();
+					profiler.removeAsyncContext();
+					
+					if (++count === 3) {
+						window.clearInterval(interval);
+						stopProfiler();
+					}
+				}, 3000);
 				doSomething();
+				profiler.end("setInterval");
+			}
+			
+			function stopProfiler() {
 				profiler.stop();
+
 				rootRecord = profiler.getRootRecord();
+
 				wfChart = new JsProfiler.WaterfallChart();
 				wfChart.setResults(rootRecord);
 				wfChart.show();
 			}
 		</script>
 	</head>
-	<body onload="runProfiler();">
+	<body onload="startProfiler();">
 		<!-- HTML_BEGIN -->
 		<div class="jsp_wc_container jsp_fillParent">
 			<div class="jsp_wc_curtain jsp_fillParent"></div>
