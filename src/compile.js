@@ -12,7 +12,7 @@ function checkFiles() {
 			compiledData += (compiledData ? "\n\n" : "") + fileContents[fileName];
 		}
 		console.log("writing compiled data to file...");
-		fs.writeFile("./../jsProfiler.js", compiledData, "utf8", function(err) {
+		fs.writeFile("./../JsProfiler.js", compiledData, "utf8", function(err) {
 			if (err) {
 				console.log(err);
 			} else {
