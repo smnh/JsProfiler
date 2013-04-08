@@ -36,24 +36,64 @@
     line-height: 18px;
 }
 
-.jsp_wc_timelineOverview {
+.jsp_wc_header {
     border-bottom: 1px solid #8e8e8e;
+}
+
+.jsp_wc_timelineOverview {
+    margin-left: 199px;
+    border-left: 1px solid #8e8e8e;
+    background-color: #ffffff;
+    height: 18px;
+}
+
+.jsp_wc_body {
+    position: relative;
+}
+
+.jsp_wc_bodyOverlays {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 200px;
+    right: 0;
 }
 
 .jsp_wc_timeline {
     position: absolute;
     z-index: 1;
     opacity: 0.8;
-    left: 200px;
+    left: 0;
     right: 0;
-    top: 19px;
+    top: 0;
     background-color: #fefefe;
     border-bottom: 1px solid #8e8e8e;
 }
 
+.jsp_wc_recordGridLinesBackground {
+    position: absolute;
+    z-index: 2;
+    left: 20px;
+    right: 20px;
+    top: 0;
+    bottom: 0;
+    border-width: 0 1px;
+}
+
+.jsp_wc_recordGridLine {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-width: 0 0 0 1px;
+}
+
+.jsp_wc_gridLineStyle {
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
 .jsp_wc_scrollView {
     position: relative;
-    z-index: 0;
     height: 400px;
     overflow: auto;
 }
@@ -70,6 +110,8 @@
 .jsp_wc_recordNamesHeader {
     font-weight: bold;
     color: #5c6e81;
+    height: 19px;
+    line-height: 19px;
 }
 
 .jsp_wc_recordNamesBackground .jsp_wc_row:nth-child(odd) {
@@ -93,21 +135,26 @@
     border-left: 1px solid #8e8e8e;
     background-color: #ffffff;
     position: relative;
+    overflow: hidden;
+    min-height: 100%;
 }
 
-.jsp_wc_recordsBackground {
-    padding-top: 18px;
+.jsp_wc_recordRowsBackground {
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    right: 0;
+    padding-top: 19px;
 }
 
-.jsp_wc_recordsBackground .jsp_wc_row:nth-child(odd) {
+.jsp_wc_recordRowsBackground .jsp_wc_row:nth-child(odd) {
     background-color: #f2f2f2;
 }
 
 .jsp_wc_records {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    top: 18px;
+    position: relative;
+    z-index: 3;
+    padding: 19px 20px 0;
 }
 
 .jsp_wc_recordContainer {

@@ -71,6 +71,7 @@
 		show: function () {
 			// TODO: TBD
 			this._shown = true;
+			this._createGridLines();
 			this._createRootRecordViews();
 		},
 
@@ -80,13 +81,14 @@
 
 			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
 			this._elements.recordNames = this._element.querySelector(".jsp_wc_recordNames");
-			this._elements.recordsBackground = this._element.querySelector(".jsp_wc_recordsBackground");
+			this._elements.recordRowsBackground = this._element.querySelector(".jsp_wc_recordRowsBackground");
+			this._elements.recordGridlinesBackground = this._element.querySelector(".jsp_wc_recordGridLinesBackground");
 			this._elements.records = this._element.querySelector(".jsp_wc_records");
 			
 			if (dev) {
 				this._elements.recordNamesBackground.innerHTML = "";
 				this._elements.recordNames.innerHTML = "";
-				this._elements.recordsBackground.innerHTML = "";
+				this._elements.recordRowsBackground.innerHTML = "";
 				this._elements.records.innerHTML = "";
 			}
 		},
@@ -153,14 +155,31 @@
 
 			return wcRecord;
 		},
+
+		_createGridLines: function() {
+			var horizontalPadding = 20,
+				backgroundWidth = this._elements.recordGridlinesBackground.offsetWidth,
+				minGridLineSpace = 60,
+				numOfColumns, columnWidth, numOfGridLines, i, gridLineTmp, gridLine;
+
+			numOfColumns = Math.floor((backgroundWidth - 2 * horizontalPadding) / minGridLineSpace);
+			
+			if (numOfColumns > 2) {
+				columnWidth = 100 / numOfColumns;
+				numOfGridLines = numOfColumns - 1;
+				gridLineTmp = document.createElement("div");
+				gridLineTmp.className = "jsp_wc_recordGridLine jsp_wc_gridLineStyle";
+				for (i = 0; i < numOfGridLines; i++) {
+					gridLine = gridLineTmp.cloneNode(true);
+					gridLine.style.left = columnWidth * (i + 1) + "%";
+					this._elements.recordGridlinesBackground.appendChild(gridLine);
+				}
+			}
+		},
 		
 		_createRootRecordViews: function () {
 			var wcRecord, wcRecordView;
 			
-			if (!this._shown) {
-				return;
-			}
-
 			this._elements.recordNames.innerHTML = "";
 			this._elements.records.innerHTML = "";
 			
@@ -195,6 +214,10 @@
 			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, 4));
 
 			this._addBackgroundRow();
+
+			if (wcRecord.folded === false) {
+				this._unfoldRecordView(wcRecordView);
+			}
 			
 			return wcRecordView;
 		},
@@ -203,12 +226,12 @@
 			var div = document.createElement("div");
 			div.className = "jsp_wc_row";
 			this._elements.recordNamesBackground.appendChild(div.cloneNode(true));
-			this._elements.recordsBackground.appendChild(div.cloneNode(true));
+			this._elements.recordRowsBackground.appendChild(div.cloneNode(true));
 		},
 
 		_removeBackgroundRow: function () {
 			this._elements.recordNamesBackground.removeChild(this._elements.recordNamesBackground.lastChild);
-			this._elements.recordsBackground.removeChild(this._elements.recordsBackground.lastChild);
+			this._elements.recordRowsBackground.removeChild(this._elements.recordRowsBackground.lastChild);
 		},
 		
 		_foldRecord: function(wcRecord) {
@@ -229,10 +252,6 @@
 			for (i = 0; i < wcRecord.children.length; i++) {
 				childWcRecord = wcRecord.children[i];
 				childWcRecordView = this._createWcRecordView(childWcRecord);
-
-				if (childWcRecord.folded === false) {
-					this._unfoldRecordView(childWcRecordView);
-				}
 
 				wcRecordView.addChildWcRecordView(childWcRecordView);
 			}
