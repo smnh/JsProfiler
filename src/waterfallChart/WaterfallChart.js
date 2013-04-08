@@ -78,11 +78,13 @@
 		_generate: function() {
 			this._createElement();
 			this._addStyleElement();
-
+			
+			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
+			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
+			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
 			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
 			this._elements.recordNames = this._element.querySelector(".jsp_wc_recordNames");
 			this._elements.recordRowsBackground = this._element.querySelector(".jsp_wc_recordRowsBackground");
-			this._elements.recordGridlinesBackground = this._element.querySelector(".jsp_wc_recordGridLinesBackground");
 			this._elements.records = this._element.querySelector(".jsp_wc_records");
 			
 			if (dev) {
@@ -157,23 +159,45 @@
 		},
 
 		_createGridLines: function() {
-			var horizontalPadding = 20,
-				backgroundWidth = this._elements.recordGridlinesBackground.offsetWidth,
+			var paddingLeft = 20,
+				paddingRight = 5,
+				timeLineWidth = this._elements.recordRowsBackground.offsetWidth,
+				timeLineScaleWidth = timeLineWidth - paddingLeft - paddingRight,
 				minGridLineSpace = 60,
-				numOfColumns, columnWidth, numOfGridLines, i, gridLineTmp, gridLine;
+				numOfColumns, columnRatio, columnWidth, numOfGridLines,
+				i, gridLineTmp, gridLineElm, gridLineLabelTmp, gridLineLabelElm, gridLineTime;
 
-			numOfColumns = Math.floor((backgroundWidth - 2 * horizontalPadding) / minGridLineSpace);
+			gridLineTmp = document.createElement("div");
+			gridLineTmp.className = "jsp_wc_recordGridLine";
+
+			gridLineLabelTmp = document.createElement("div");
+			gridLineLabelTmp.className = "jsp_wc_gridLineLabel";
+
+			this._elements.bodyOverlays.style.width = timeLineWidth + "px";
+			numOfColumns = Math.floor(timeLineScaleWidth / minGridLineSpace);
 			
-			if (numOfColumns > 2) {
-				columnWidth = 100 / numOfColumns;
-				numOfGridLines = numOfColumns - 1;
-				gridLineTmp = document.createElement("div");
-				gridLineTmp.className = "jsp_wc_recordGridLine jsp_wc_gridLineStyle";
-				for (i = 0; i < numOfGridLines; i++) {
-					gridLine = gridLineTmp.cloneNode(true);
-					gridLine.style.left = columnWidth * (i + 1) + "%";
-					this._elements.recordGridlinesBackground.appendChild(gridLine);
-				}
+			if (numOfColumns < 1) {
+				numOfColumns = 1;
+			}
+			
+			columnRatio = 1 / numOfColumns;
+			columnWidth = 100 * columnRatio;
+			numOfGridLines = numOfColumns + 1;
+			
+			for (i = 0; i < numOfGridLines; i++) {
+				gridLineElm = gridLineTmp.cloneNode(true);
+				gridLineElm.style.left = columnWidth * i + "%";
+
+				this._elements.recordGridlinesContainer.appendChild(gridLineElm);
+				
+				gridLineTime = this._totalDuration * i * columnRatio;
+
+				gridLineLabelElm = gridLineLabelTmp.cloneNode(true);
+				gridLineLabelElm.appendChild(document.createTextNode(gridLineTime ? utils.timeString(gridLineTime) : "0"));
+
+				gridLineElm = gridLineElm.cloneNode(true);
+				gridLineElm.appendChild(gridLineLabelElm);
+				this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
 			}
 		},
 		
@@ -199,19 +223,25 @@
 		 * @private
 		 */
 		_createWcRecordView: function(wcRecord) {
-			var wcRecordView, i, asyncTime;
+			var wcRecordView, i, asyncTime, decimalPlaces = 5;
 
 			wcRecordView = new WCRecordView(wcRecord);
 			wcRecordView.delegate = this;
 
-			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4));
-			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, 4));
-			wcRecordView.addChildRecordBar(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, 4), utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, 4));
+			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces));
+			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, decimalPlaces));
+			wcRecordView.addChildRecordBar(
+				utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces),
+				utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces)
+			);
 			for (i = 0; i < wcRecord.asyncTimes.length; i++) {
 				asyncTime = wcRecord.asyncTimes[i];
-				wcRecordView.addChildRecordBar(utils.percentWithDecimalPlaces(asyncTime.start / this._totalDuration, 4), utils.percentWithDecimalPlaces(asyncTime.duration / this._totalDuration, 4));
+				wcRecordView.addChildRecordBar(
+					utils.percentWithDecimalPlaces(asyncTime.start / this._totalDuration, decimalPlaces),
+					utils.percentWithDecimalPlaces(asyncTime.duration / this._totalDuration, decimalPlaces)
+				);
 			}
-			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, 4));
+			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, decimalPlaces));
 
 			this._addBackgroundRow();
 
@@ -437,6 +467,15 @@
 			var multiplier = Math.pow(10, decimalPlaces);
 			number = number * 100;
 			return (Math.round(number * multiplier) / multiplier) + "%";
+		},
+		timeString: function(timeMs) {
+			var timeStr;
+			if (timeMs >= 1000) {
+				timeStr = Math.round(timeMs / 100) / 10 + " s";
+			} else {
+				timeStr = Math.round(timeMs) + " ms";
+			}
+			return timeStr;
 		}
 	};
 	

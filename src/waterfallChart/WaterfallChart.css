@@ -56,12 +56,11 @@
     top: 0;
     bottom: 0;
     left: 200px;
-    right: 0;
 }
 
 .jsp_wc_timeline {
     position: absolute;
-    z-index: 1;
+    z-index: 3;
     opacity: 0.8;
     left: 0;
     right: 0;
@@ -70,32 +69,42 @@
     border-bottom: 1px solid #8e8e8e;
 }
 
-.jsp_wc_recordGridLinesBackground {
+.jsp_wc_gridLinesContainer {
     position: absolute;
-    z-index: 2;
     left: 20px;
-    right: 20px;
-    top: 0;
+    right: 5px;
     bottom: 0;
-    border-width: 0 1px;
+}
+
+.jsp_wc_timelineGridLinesContainer {
+    top: 0;
+}
+
+.jsp_wc_recordGridLinesContainer {
+    top: 19px;
+    z-index: 1;
 }
 
 .jsp_wc_recordGridLine {
     position: absolute;
     top: 0;
     bottom: 0;
-    border-width: 0 0 0 1px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.jsp_wc_gridLineStyle {
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0.1);
+.jsp_wc_gridLineLabel {
+    position: absolute;
+    font-size: 10px;
+    color: #666666;
+    white-space: nowrap;
+    right: 5px;
 }
 
 .jsp_wc_scrollView {
     position: relative;
     height: 400px;
-    overflow: auto;
+    overflow-y: scroll;
+    overflow-x: auto;
 }
 
 /***** left column *****/
@@ -153,8 +162,8 @@
 
 .jsp_wc_records {
     position: relative;
-    z-index: 3;
-    padding: 19px 20px 0;
+    z-index: 2;
+    padding: 19px 5px 0 20px;
 }
 
 .jsp_wc_recordContainer {
