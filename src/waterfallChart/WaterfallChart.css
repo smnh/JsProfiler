@@ -56,6 +56,7 @@
     top: 0;
     bottom: 0;
     left: 200px;
+    right: 0;
 }
 
 .jsp_wc_timeline {
@@ -63,7 +64,6 @@
     z-index: 3;
     opacity: 0.8;
     left: 0;
-    right: 0;
     top: 0;
     background-color: #fefefe;
     border-bottom: 1px solid #8e8e8e;
@@ -72,12 +72,12 @@
 .jsp_wc_gridLinesContainer {
     position: absolute;
     left: 20px;
-    right: 5px;
     bottom: 0;
 }
 
 .jsp_wc_timelineGridLinesContainer {
     top: 0;
+    right: 5px;
 }
 
 .jsp_wc_recordGridLinesContainer {
@@ -98,6 +98,16 @@
     color: #666666;
     white-space: nowrap;
     right: 5px;
+}
+
+.jsp_wc_resizeHandle {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    z-index: 1;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIE1hY2ludG9zaCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpEMjBCMEM2MDk4OEUxMUUyQkNGRkQ0QjVDODY4NjQzQSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpEMjBCMEM2MTk4OEUxMUUyQkNGRkQ0QjVDODY4NjQzQSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjM1MzM0RUVCOTg4QTExRTJCQ0ZGRDRCNUM4Njg2NDNBIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjM1MzM0RUVDOTg4QTExRTJCQ0ZGRDRCNUM4Njg2NDNBIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+nnJe6QAAAO5JREFUeNq0lYENgjAQRdsuICO4AWxQNkEnq5uIE+AIboBOUO/kaiKB9nJXm/yUEPIfd78c1hgzgx6gJ+hO+wgyMcabqbAQEAsaAGYkwnUtmE+ggxTgqCV7C1vWw4MvaXscmewCNOYJkKvgZK0N2pA9I+SgCbldBRpqQhLl57RkIF4KCOujuAGRV5DpX1BnwAjJS81ZAC1cY85qn9Z88wDggUn3RG3JfSdkPi3Tvl4FX0gyJ7U1MsjJO+kAA8gZtkvhsc5ppiQD0qgAMMox0O4vFZD5WAA0mpAHRsizTT8FZas8Xfaft16qwv34FmAAP+tg5DGusHEAAAAASUVORK5CYII=) no-repeat;
+    background-size: 100%;
+    cursor: nwse-resize;
 }
 
 .jsp_wc_scrollView {

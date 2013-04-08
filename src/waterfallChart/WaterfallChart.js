@@ -71,6 +71,9 @@
 		show: function () {
 			// TODO: TBD
 			this._shown = true;
+			
+			this._layoutElements();
+			this._attachEvents();
 			this._createGridLines();
 			this._createRootRecordViews();
 		},
@@ -78,10 +81,15 @@
 		_generate: function() {
 			this._createElement();
 			this._addStyleElement();
-			
+
+			this._elements.table = this._element.querySelector(".jsp_wc_table");
 			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
+			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
 			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
 			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
+			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
+			this._elements.resizeHandle = this._element.querySelector(".jsp_wc_resizeHandle");
+			this._elements.scrollView = this._element.querySelector(".jsp_wc_scrollView");
 			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
 			this._elements.recordNames = this._element.querySelector(".jsp_wc_recordNames");
 			this._elements.recordRowsBackground = this._element.querySelector(".jsp_wc_recordRowsBackground");
@@ -158,14 +166,58 @@
 			return wcRecord;
 		},
 
-		_createGridLines: function() {
-			var paddingLeft = 20,
-				paddingRight = 5,
+		_layoutElements: function() {
+			var paddingRight = 5,
+				bodyOverlaysWidth = this._elements.bodyOverlays.offsetWidth,
 				timeLineWidth = this._elements.recordRowsBackground.offsetWidth,
-				timeLineScaleWidth = timeLineWidth - paddingLeft - paddingRight,
+				scrollBarWidth = bodyOverlaysWidth - timeLineWidth;
+				
+			this._elements.timeline.style.right = scrollBarWidth + "px";
+			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
+
+			this._elements.resizeHandle.style.width = (scrollBarWidth - 2) + "px";
+			this._elements.resizeHandle.style.height = (scrollBarWidth - 2) + "px";
+		},
+
+		_attachEvents: function() {
+			this._elements.resizeHandle.addEventListener("mousedown", this, false);
+		},
+		
+		handleEvent: function(event) {
+			// TODO: refactor
+			if (event.type === "mousedown" && event.target === this._elements.resizeHandle) {
+				// Prevent text selection
+				event.preventDefault();
+				this._resizeStartPosition = {
+					x: event.pageX,
+					y: event.pageY
+				};
+				this._resizeStartSize = {
+					width: this._elements.table.clientWidth,
+					height: this._elements.scrollView.offsetHeight
+				};
+				document.addEventListener("mousemove", this, false);
+				document.addEventListener("mouseup", this, false);
+			} else {
+				switch (event.type) {
+					case "mousemove":
+						this._elements.table.style.width = (this._resizeStartSize.width + (event.pageX - this._resizeStartPosition.x) * 2) + "px";
+						this._elements.scrollView.style.height = (this._resizeStartSize.height + (event.pageY - this._resizeStartPosition.y)) + "px";
+						break;
+					case "mouseup":
+						document.removeEventListener("mousemove", this, false);
+						document.removeEventListener("mouseup", this, false);
+						break;
+				}
+			}
+		},
+		
+		_createGridLines: function() {
+			var timeLineScaleWidth,
 				minGridLineSpace = 60,
 				numOfColumns, columnRatio, columnWidth, numOfGridLines,
-				i, gridLineTmp, gridLineElm, gridLineLabelTmp, gridLineLabelElm, gridLineTime;
+				gridLineTmp, gridLineElm, gridLineLabelTmp, gridLineLabelElm,
+				i, gridLineTime;
 
 			gridLineTmp = document.createElement("div");
 			gridLineTmp.className = "jsp_wc_recordGridLine";
@@ -173,7 +225,8 @@
 			gridLineLabelTmp = document.createElement("div");
 			gridLineLabelTmp.className = "jsp_wc_gridLineLabel";
 
-			this._elements.bodyOverlays.style.width = timeLineWidth + "px";
+			timeLineScaleWidth = this._elements.timeline.offsetWidth;
+			
 			numOfColumns = Math.floor(timeLineScaleWidth / minGridLineSpace);
 			
 			if (numOfColumns < 1) {
