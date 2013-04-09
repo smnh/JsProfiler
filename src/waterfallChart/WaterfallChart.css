@@ -36,15 +36,54 @@
     line-height: 18px;
 }
 
+.jsp_wc_rightColumn {
+    margin-left: 199px;
+    border-left: 1px solid #8e8e8e;
+    background-color: #ffffff;
+}
+
 .jsp_wc_header {
     border-bottom: 1px solid #8e8e8e;
 }
 
 .jsp_wc_timelineOverview {
-    margin-left: 199px;
-    border-left: 1px solid #8e8e8e;
-    background-color: #ffffff;
+    position: relative;
+    margin-left: 20px;
     height: 18px;
+}
+
+.jsp_wc_timelineOverviewShadowOverlay {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.jsp_wc_timelineOverviewHandle {
+    position: absolute;
+    height: 100%;
+    width: 5px;
+    background-color: #999999;
+    border-radius: 2px;
+    cursor: ew-resize;
+}
+
+.jsp_wc_timelineOverviewLeftShadowOverlay {
+    left: -20px;
+    right: 100%;
+}
+
+.jsp_wc_timelineOverviewRightShadowOverlay {
+    right: 0;
+    left: 100%;
+}
+
+.jsp_wc_timelineOverviewLeftShadowOverlay .jsp_wc_timelineOverviewHandle {
+    right: -2px;
+}
+
+.jsp_wc_timelineOverviewRightShadowOverlay .jsp_wc_timelineOverviewHandle {
+    left: -2px;
 }
 
 .jsp_wc_body {
@@ -73,6 +112,11 @@
     position: absolute;
     left: 20px;
     bottom: 0;
+}
+
+.jsp_wc_timelineOverviewGridLinesContainer {
+    position: relative;
+    height: 100%;
 }
 
 .jsp_wc_timelineGridLinesContainer {
@@ -149,10 +193,7 @@
 
 /***** right column *****/
 
-.jsp_wc_rightColumn {
-    margin-left: 199px;
-    border-left: 1px solid #8e8e8e;
-    background-color: #ffffff;
+.jsp_wc_body .jsp_wc_rightColumn {
     position: relative;
     overflow: hidden;
     min-height: 100%;

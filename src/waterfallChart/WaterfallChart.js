@@ -31,6 +31,7 @@
 		this._recordsArray = null;
 		this._shown = dev;
 		this._totalDuration = 0;
+		this._numberOfGridlines = 0;
 		this._element = null;
 		this._elements = {};
 		this._generate();
@@ -40,7 +41,63 @@
 	
 	WaterfallChart.prototype = {
 		constructor: WaterfallChart,
+		
+		_generate: function () {
+			this._createElement();
+			this._addStyleElement();
 
+			this._elements.table = this._element.querySelector(".jsp_wc_table");
+			this._elements.timelineOverview = this._element.querySelector(".jsp_wc_timelineOverview");
+			this._elements.timelineOverviewLeftHandle = this._element.querySelector(".jsp_wc_timelineOverviewLeftHandle");
+			this._elements.timelineOverviewRightShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
+			this._elements.timelineOverviewGridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
+			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
+			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
+			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
+			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
+			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
+			this._elements.resizeHandle = this._element.querySelector(".jsp_wc_resizeHandle");
+			this._elements.scrollView = this._element.querySelector(".jsp_wc_scrollView");
+			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
+			this._elements.recordNames = this._element.querySelector(".jsp_wc_recordNames");
+			this._elements.recordRowsBackground = this._element.querySelector(".jsp_wc_recordRowsBackground");
+			this._elements.records = this._element.querySelector(".jsp_wc_records");
+
+			if (dev) {
+				this._elements.recordNamesBackground.innerHTML = "";
+				this._elements.recordNames.innerHTML = "";
+				this._elements.recordRowsBackground.innerHTML = "";
+				this._elements.records.innerHTML = "";
+			}
+		},
+
+		_createElement: function () {
+			if (dev) {
+				this._element = document.getElementsByClassName("jsp_wc_container")[0];
+			} else {
+				this._element = window.document.createElement("div");
+				this._element.innerHTML = "__HTML__";
+			}
+		},
+
+		_addStyleElement: function () {
+			var css, cssTextNode;
+
+			if (styleElement !== null || dev) {
+				return;
+			}
+
+			css = "__CSS__";
+
+			cssTextNode = document.createTextNode(css);
+
+			styleElement = document.createElement("style");
+			styleElement.type = "text/css";
+			styleElement.appendChild(cssTextNode);
+
+			document.getElementsByTagName("head")[0].appendChild(styleElement);
+		},
+		
 		/**
 		 * Sets a JsProfiler.Record as a root record of the waterfall chart.
 		 *
@@ -64,72 +121,7 @@
 				this._recordsArray.push(wcRecord);
 			}
 		},
-
-		/**
-		 * Shows the waterfall chart.
-		 */
-		show: function () {
-			// TODO: TBD
-			this._shown = true;
-			
-			this._layoutElements();
-			this._attachEvents();
-			this._createGridLines();
-			this._createRootRecordViews();
-		},
-
-		_generate: function() {
-			this._createElement();
-			this._addStyleElement();
-
-			this._elements.table = this._element.querySelector(".jsp_wc_table");
-			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
-			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
-			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
-			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
-			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
-			this._elements.resizeHandle = this._element.querySelector(".jsp_wc_resizeHandle");
-			this._elements.scrollView = this._element.querySelector(".jsp_wc_scrollView");
-			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
-			this._elements.recordNames = this._element.querySelector(".jsp_wc_recordNames");
-			this._elements.recordRowsBackground = this._element.querySelector(".jsp_wc_recordRowsBackground");
-			this._elements.records = this._element.querySelector(".jsp_wc_records");
-			
-			if (dev) {
-				this._elements.recordNamesBackground.innerHTML = "";
-				this._elements.recordNames.innerHTML = "";
-				this._elements.recordRowsBackground.innerHTML = "";
-				this._elements.records.innerHTML = "";
-			}
-		},
 		
-		_createElement: function () {
-			if (dev) {
-				this._element = document.getElementsByClassName("jsp_wc_container")[0];
-			} else {
-				this._element = window.document.createElement("div");
-				this._element.innerHTML = "__HTML__";
-			}
-		},
-		
-		_addStyleElement: function () {
-			var css, cssTextNode;
-
-			if (styleElement !== null || dev) {
-				return;
-			}
-
-			css = "__CSS__";
-
-			cssTextNode = document.createTextNode(css);
-
-			styleElement = document.createElement("style");
-			styleElement.type = "text/css";
-			styleElement.appendChild(cssTextNode);
-
-			document.getElementsByTagName("head")[0].appendChild(styleElement);
-		},
-
 		/**
 		 * @param {JsProfiler.Record} record
 		 * @returns {WCRecord}
@@ -143,11 +135,11 @@
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
 				wcRecord.children.push(childWcRecord);
-				
+
 				if (!childWcRecord.async) {
 					// Synchronous child
 					wcRecord.self -= childWcRecord.duration;
-				} else  {
+				} else {
 					// Asynchronous child
 					wcRecord.asyncTimes.push({
 						start: childWcRecord.start,
@@ -156,7 +148,7 @@
 				}
 
 				wcRecord.asyncTimes = wcRecord.asyncTimes.concat(childWcRecord.asyncTimes);
-				
+
 				if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
 					wcRecord.asyncEnd = childWcRecord.asyncEnd;
 					wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
@@ -165,13 +157,28 @@
 
 			return wcRecord;
 		},
+		
+		/**
+		 * Shows the waterfall chart.
+		 */
+		show: function () {
+			// TODO: TBD
+			this._shown = true;
+			
+			this._layoutElements();
+			this._attachEvents();
+			this._updateGridLines();
+			this._createRootRecordViews();
+		},
 
 		_layoutElements: function() {
 			var paddingRight = 5,
 				bodyOverlaysWidth = this._elements.bodyOverlays.offsetWidth,
 				timeLineWidth = this._elements.recordRowsBackground.offsetWidth,
 				scrollBarWidth = bodyOverlaysWidth - timeLineWidth;
-				
+
+			this._elements.timelineOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
+			this._elements.timelineOverviewRightShadowOverlay.style.right = - (scrollBarWidth + paddingRight) + "px";
 			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 
@@ -203,6 +210,7 @@
 					case "mousemove":
 						this._elements.table.style.width = (this._resizeStartSize.width + (event.pageX - this._resizeStartPosition.x) * 2) + "px";
 						this._elements.scrollView.style.height = (this._resizeStartSize.height + (event.pageY - this._resizeStartPosition.y)) + "px";
+						this._updateGridLines();
 						break;
 					case "mouseup":
 						document.removeEventListener("mousemove", this, false);
@@ -212,46 +220,70 @@
 			}
 		},
 		
-		_createGridLines: function() {
-			var timeLineScaleWidth,
-				minGridLineSpace = 60,
-				numOfColumns, columnRatio, columnWidth, numOfGridLines,
-				gridLineTmp, gridLineElm, gridLineLabelTmp, gridLineLabelElm,
-				i, gridLineTime;
+		_updateGridLines: function() {
+			var numOfColumns, columnRatio, columnWidthPercent, columnLeft, numOfGridLines,
+				i, reuseNumberOfGridlines,
+				gridLineElm, gridLineLabelElm,
+				minGridLineSpace = 60;
 
-			gridLineTmp = document.createElement("div");
-			gridLineTmp.className = "jsp_wc_recordGridLine";
+			numOfColumns = Math.floor(this._elements.timeline.offsetWidth / minGridLineSpace);
 
-			gridLineLabelTmp = document.createElement("div");
-			gridLineLabelTmp.className = "jsp_wc_gridLineLabel";
-
-			timeLineScaleWidth = this._elements.timeline.offsetWidth;
-			
-			numOfColumns = Math.floor(timeLineScaleWidth / minGridLineSpace);
-			
 			if (numOfColumns < 1) {
 				numOfColumns = 1;
 			}
-			
+
 			columnRatio = 1 / numOfColumns;
-			columnWidth = 100 * columnRatio;
+			columnWidthPercent = 100 * columnRatio;
 			numOfGridLines = numOfColumns + 1;
 			
-			for (i = 0; i < numOfGridLines; i++) {
-				gridLineElm = gridLineTmp.cloneNode(true);
-				gridLineElm.style.left = columnWidth * i + "%";
+			if (numOfGridLines === this._numberOfGridlines) {
+				return;
+			}
 
-				this._elements.recordGridlinesContainer.appendChild(gridLineElm);
+			reuseNumberOfGridlines = Math.min(numOfGridLines, this._numberOfGridlines);
+			
+			// First, reuse all existing grid-line elements.
+			for (i = 0; i < reuseNumberOfGridlines; i++) {
+				columnLeft = (columnWidthPercent * i) + "%";
+				this._elements.recordGridlinesContainer.childNodes[i].style.left = columnLeft;
+				this._elements.timelineGridlinesContainer.childNodes[i].style.left = columnLeft;
+				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
+				this._elements.timelineOverviewGridlinesContainer.childNodes[i].style.left = columnLeft;
+				this._elements.timelineOverviewGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
+			}
+			
+			// Create new grid-line elements
+			for (i; i < numOfGridLines; i++) {
+				columnLeft = (columnWidthPercent * i) + "%";
 				
-				gridLineTime = this._totalDuration * i * columnRatio;
+				gridLineElm = document.createElement("div");
+				gridLineElm.className = "jsp_wc_recordGridLine";
+				gridLineElm.style.left = columnLeft;
+				this._elements.recordGridlinesContainer.appendChild(gridLineElm);
 
-				gridLineLabelElm = gridLineLabelTmp.cloneNode(true);
-				gridLineLabelElm.appendChild(document.createTextNode(gridLineTime ? utils.timeString(gridLineTime) : "0"));
+				gridLineLabelElm = document.createElement("div");
+				gridLineLabelElm.className = "jsp_wc_gridLineLabel";
+				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
 
-				gridLineElm = gridLineElm.cloneNode(true);
+				gridLineElm = gridLineElm.cloneNode(false);
 				gridLineElm.appendChild(gridLineLabelElm);
 				this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
+
+				gridLineElm = gridLineElm.cloneNode(false);
+				gridLineLabelElm = gridLineLabelElm.cloneNode(false);
+				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
+				gridLineElm.appendChild(gridLineLabelElm);
+				this._elements.timelineOverviewGridlinesContainer.appendChild(gridLineElm);
 			}
+			
+			// Remove unnecessary grid-lines
+			for (i = this._numberOfGridlines - 1; i >= numOfGridLines; i--) {
+				this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
+				this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
+				this._elements.timelineOverviewGridlinesContainer.removeChild(this._elements.timelineOverviewGridlinesContainer.lastChild);
+			}
+			
+			this._numberOfGridlines = numOfGridLines;
 		},
 		
 		_createRootRecordViews: function () {
@@ -308,8 +340,8 @@
 		_addBackgroundRow: function() {
 			var div = document.createElement("div");
 			div.className = "jsp_wc_row";
-			this._elements.recordNamesBackground.appendChild(div.cloneNode(true));
-			this._elements.recordRowsBackground.appendChild(div.cloneNode(true));
+			this._elements.recordNamesBackground.appendChild(div.cloneNode(false));
+			this._elements.recordRowsBackground.appendChild(div.cloneNode(false));
 		},
 
 		_removeBackgroundRow: function () {
