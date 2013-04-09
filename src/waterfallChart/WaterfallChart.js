@@ -30,16 +30,18 @@
 	function WaterfallChart() {
 		this._recordsArray = null;
 //		this._shown = dev;
+		
 		this._totalDuration = 0;
 		this._numberOfGridlines = 0;
+		
 		this._timelineOverviewStart = 0;
 		this._timelineOverviewEnd = 100;
-		this._eventState = "idle";
-		this._eventInitPagePosition = null;
-		this._resizeInitSize = null;
 		this._timelineOverviewWidth = null;
-		this._timelineOverviewInitStart = null;
-		this._timelineOverviewInitEnd = null;
+		
+		this._eventState = "idle";
+		this._startEventPagePosition = null;
+		this._startEventSize = null;
+		
 		this._element = null;
 		this._elements = {};
 		this._generate();
@@ -56,13 +58,8 @@
 
 			this._elements.table = this._element.querySelector(".jsp_wc_table");
 			
-			this._elements.timelineOverview = this._element.querySelector(".jsp_wc_timelineOverview");
-			this._elements.timelineOverviewMoveHandle = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewMoveHandle");
-			this._elements.timelineOverviewGridlinesContainer = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
-			this._elements.timelineOverviewLeftShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
-			this._elements.timelineOverviewRightShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
-			this._elements.timelineOverviewLeftHandle = this._elements.timelineOverviewLeftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
-			this._elements.timelineOverviewRightHandle = this._elements.timelineOverviewRightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+			this._timelineOverview = new TimelineOverview(this._element);
+			this._timelineOverview.delegate = this;
 			
 			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
 			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
@@ -190,14 +187,11 @@
 				timeLineWidth = this._elements.recordRowsBackground.offsetWidth,
 				scrollBarWidth = bodyOverlaysWidth - timeLineWidth;
 
-			this._elements.timelineOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
-			this._timelineOverviewWidth = this._elements.timelineOverview.offsetWidth;
+			this._timelineOverview.setMarginRight(scrollBarWidth + paddingRight);
+			this._timelineOverview.setLeftHandlePosition(this._timelineOverviewStart);
+			this._timelineOverview.setRightHandlePosition(this._timelineOverviewEnd);
 			
-			this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
-			this._elements.timelineOverviewRightShadowOverlay.style.right = - (scrollBarWidth + paddingRight) + "px";
-			this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
-			this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
-			this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
+			this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 			
 			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
@@ -208,9 +202,6 @@
 
 		_attachEvents: function() {
 			this._elements.resizeHandle.addEventListener("mousedown", this, false);
-			this._elements.timelineOverviewMoveHandle.addEventListener("mousedown", this, false);
-			this._elements.timelineOverviewLeftHandle.addEventListener("mousedown", this, false);
-			this._elements.timelineOverviewRightHandle.addEventListener("mousedown", this, false);
 		},
 		
 		_eventStates: {
@@ -221,97 +212,26 @@
 					document.addEventListener("mousemove", this, false);
 					document.addEventListener("mouseup", this, false);
 					
-					this._eventInitPagePosition = {
+					this._startEventPagePosition = {
 						x: event.pageX,
 						y: event.pageY
 					};
 					
 					if (event.target === this._elements.resizeHandle) {
 						this._eventState = "resizeHandleGrabbed";
-						this._resizeInitSize = {
+						this._startEventSize = {
 							width: this._elements.table.clientWidth,
 							height: this._elements.scrollView.offsetHeight
 						};
-					} else if (event.target === this._elements.timelineOverviewLeftHandle) {
-						this._eventState = "timelineOverviewLeftHandleGrabbed";
-						this._timelineOverviewInitStart = this._timelineOverviewStart;
-					} else if (event.target === this._elements.timelineOverviewRightHandle) {
-						this._eventState = "timelineOverviewRightHandleGrabbed";
-						this._timelineOverviewInitEnd = this._timelineOverviewEnd;
-					} else if (event.target === this._elements.timelineOverviewMoveHandle) {
-						this._eventState = "timelineOverviewMoveHandleGrabbed";
-						this._timelineOverviewInitStart = this._timelineOverviewStart;
-						this._timelineOverviewInitEnd = this._timelineOverviewEnd;
 					}
 				}
 			},
 			resizeHandleGrabbed: {
 				move: function() {
-					this._elements.table.style.width = (this._resizeInitSize.width + (event.pageX - this._eventInitPagePosition.x) * 2) + "px";
-					this._elements.scrollView.style.height = (this._resizeInitSize.height + (event.pageY - this._eventInitPagePosition.y)) + "px";
-					this._timelineOverviewWidth = this._elements.timelineOverview.offsetWidth;
+					this._elements.table.style.width = (this._startEventSize.width + (event.pageX - this._startEventPagePosition.x) * 2) + "px";
+					this._elements.scrollView.style.height = (this._startEventSize.height + (event.pageY - this._startEventPagePosition.y)) + "px";
+					this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 					this._updateGridLines();
-				},
-				end: function() {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			},
-			timelineOverviewLeftHandleGrabbed: {
-				move: function () {
-					this._timelineOverviewStart = this._timelineOverviewInitStart + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
-					if (this._timelineOverviewStart + 5 * 100 / this._timelineOverviewWidth > this._timelineOverviewEnd) {
-						this._timelineOverviewStart = this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewWidth;
-					}
-					if (this._timelineOverviewStart < 0) {
-						this._timelineOverviewStart = 0;
-					}
-					this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
-					this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
-					this._updateGridLineTimes();
-				},
-				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			},
-			timelineOverviewRightHandleGrabbed: {
-				move: function () {
-					this._timelineOverviewEnd = this._timelineOverviewInitEnd + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
-					if (this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewWidth < this._timelineOverviewStart) {
-						this._timelineOverviewEnd = this._timelineOverviewStart + 5 * 100 / this._timelineOverviewWidth;
-					}
-					if (this._timelineOverviewEnd > 100) {
-						this._timelineOverviewEnd = 100;
-					}
-					this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
-					this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
-					this._updateGridLineTimes();
-				},
-				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			},
-			timelineOverviewMoveHandleGrabbed: {
-				move: function() {
-					this._timelineOverviewStart = this._timelineOverviewInitStart + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
-					this._timelineOverviewEnd = this._timelineOverviewInitEnd + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
-					if (this._timelineOverviewStart < 0) {
-						this._timelineOverviewEnd += -this._timelineOverviewStart;
-						this._timelineOverviewStart = 0;
-					} else if (this._timelineOverviewEnd > 100) {
-						this._timelineOverviewStart -= this._timelineOverviewEnd - 100;
-						this._timelineOverviewEnd = 100;
-					}
-					this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
-					this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
-					this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
-					this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
-					this._updateGridLineTimes();
 				},
 				end: function() {
 					document.removeEventListener("mousemove", this, false);
@@ -354,7 +274,7 @@
 			columnWidthPercent = 100 * columnRatio;
 			numOfGridLines = numOfColumns + 1;
 			
-			if (numOfGridLines === this._numberOfGridlines) {
+			if (numOfGridLines !== this._numberOfGridlines) {
 				
 				timelineStart = this._totalDuration * this._timelineOverviewStart / 100;
 				timelineDuration = this._totalDuration * (this._timelineOverviewEnd - this._timelineOverviewStart) / 100;
@@ -374,8 +294,8 @@
 	
 					time = this._totalDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
-					this._elements.timelineOverviewGridlinesContainer.childNodes[i].style.left = columnLeft;
-					this._elements.timelineOverviewGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
+					this._timelineOverview.gridlinesContainer.childNodes[i].style.left = columnLeft;
+					this._timelineOverview.gridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
 				}
 				
 				// Create new grid-line elements
@@ -395,7 +315,7 @@
 	
 					gridLineElm = gridLineElm.cloneNode(false);
 					gridLineElm.appendChild(gridLineLabelElm);
-					this._elements.timelineOverviewGridlinesContainer.appendChild(gridLineElm);
+					this._timelineOverview.gridlinesContainer.appendChild(gridLineElm);
 					
 					time = timelineStart + timelineDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
@@ -411,7 +331,7 @@
 				for (i = this._numberOfGridlines - 1; i >= numOfGridLines; i--) {
 					this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
 					this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
-					this._elements.timelineOverviewGridlinesContainer.removeChild(this._elements.timelineOverviewGridlinesContainer.lastChild);
+					this._timelineOverview.gridlinesContainer.removeChild(this._timelineOverview.gridlinesContainer.lastChild);
 				}
 				
 				this._numberOfGridlines = numOfGridLines;
@@ -526,9 +446,19 @@
 				wcRecordView.addChildWcRecordView(childWcRecordView);
 			}
 		},
+
+		/*
+		 * Timeline delegate methods
+		 */
+
+		timelineDidChangedHandlesPosition: function(timeline) {
+			this._timelineOverviewStart = timeline.getLeftHandlePosition();
+			this._timelineOverviewEnd = timeline.getRightHandlePosition();
+			this._updateGridLineTimes();
+		},
 		
 		/* 
-		 * WaterfallChart.WCRecordView delegate methods
+		 * WCRecordView delegate methods
 		 */
 		
 		wcRecordViewFolded: function (wcRecordView) {
@@ -541,6 +471,189 @@
 			var wcRecord = wcRecordView.wcRecord;
 			wcRecord.folded = false;
 			this._unfoldRecordView(wcRecordView);
+		}
+	};
+
+	/**
+	 * 
+	 * @param ancestorElement
+	 * @property {Node} gridlinesContainer
+	 * @property {Object} delegate The delegate may implement single method called timelineDidChangedHandlesPosition
+	 * @constructor
+	 */
+	function TimelineOverview(ancestorElement) {
+		this._element = ancestorElement.querySelector(".jsp_wc_timelineOverview");
+		
+		this._elements = {};
+		this._elements.moveHandle = this._element.querySelector(".jsp_wc_timelineOverviewMoveHandle");
+		this._elements.leftShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
+		this._elements.rightShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
+		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+		
+		this.gridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
+		this.delegate = null;
+		
+		this._leftHandlePosition = null;
+		this._rightHandlePosition = null;
+		
+		this._eventState = "idle";
+		this._startEventWidth = null;
+		this._startEventPagePosition = null;
+		this._startEventLeftHandlePosition = null;
+		this._startEventRightHandlePosition = null;
+		this._attachEvents();
+	}
+	
+	TimelineOverview.prototype = {
+		constructor: TimelineOverview,
+		
+		setMarginRight: function(marginRight) {
+			this._element.style.marginRight = marginRight + "px";
+			this._elements.rightShadowOverlay.style.right = - marginRight + "px";
+		},
+		
+		getOffsetWidth: function() {
+			return this._element.offsetWidth;
+		},
+
+		getLeftHandlePosition: function() {
+			return this._leftHandlePosition;
+		},
+		
+		setLeftHandlePosition: function(leftHandlePosition) {
+			this._leftHandlePosition = leftHandlePosition;
+			this._elements.leftShadowOverlay.style.right = (100 - leftHandlePosition) + "%";
+			this._elements.moveHandle.style.left = leftHandlePosition + "%";
+		},
+
+		getRightHandlePosition: function () {
+			return this._rightHandlePosition;
+		},
+
+		setRightHandlePosition: function(rightHandlePosition) {
+			this._rightHandlePosition = rightHandlePosition;
+			this._elements.rightShadowOverlay.style.left = rightHandlePosition + "%";
+			this._elements.moveHandle.style.right = (100 - rightHandlePosition) + "%";
+		},
+		
+		_attachEvents: function() {
+			this._elements.moveHandle.addEventListener("mousedown", this, false);
+			this._elements.leftHandle.addEventListener("mousedown", this, false);
+			this._elements.rightHandle.addEventListener("mousedown", this, false);
+		},
+
+		_notifyDelegate: function() {
+			if (this.delegate && typeof this.delegate.timelineDidChangedHandlesPosition === "function") {
+				this.delegate.timelineDidChangedHandlesPosition(this);
+			}
+		},
+		
+		handleEvent: function(event) {
+			var eventHandlerName;
+			switch (event.type) {
+				case "mousedown":
+					eventHandlerName = "start";
+					break;
+				case "mousemove":
+					eventHandlerName = "move";
+					break;
+				case "mouseup":
+					eventHandlerName = "end";
+					break;
+			}
+			this._eventStates[this._eventState][eventHandlerName].call(this, event);
+		},
+
+		_eventStates: {
+			idle: {
+				start: function (event) {
+					event.preventDefault(); // Prevent text selection
+
+					document.addEventListener("mousemove", this, false);
+					document.addEventListener("mouseup", this, false);
+
+					this._startEventPagePosition = {
+						x: event.pageX,
+						y: event.pageY
+					};
+
+					this._startEventWidth = this.getOffsetWidth();
+					
+					if (event.target === this._elements.leftHandle) {
+						this._eventState = "timelineOverviewLeftHandleGrabbed";
+						this._startEventLeftHandlePosition = this._leftHandlePosition;
+					} else if (event.target === this._elements.rightHandle) {
+						this._eventState = "timelineOverviewRightHandleGrabbed";
+						this._startEventRightHandlePosition = this._rightHandlePosition;
+					} else if (event.target === this._elements.moveHandle) {
+						this._eventState = "timelineOverviewMoveHandleGrabbed";
+						this._startEventLeftHandlePosition = this._leftHandlePosition;
+						this._startEventRightHandlePosition = this._rightHandlePosition;
+					}
+				}
+			},
+			timelineOverviewLeftHandleGrabbed: {
+				move: function () {
+					var leftHandlePosition = this._startEventLeftHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
+					
+					if (leftHandlePosition + 5 * 100 / this._startEventWidth > this._rightHandlePosition) {
+						leftHandlePosition = this._rightHandlePosition - 5 * 100 / this._startEventWidth;
+					} else if (leftHandlePosition < 0) {
+						leftHandlePosition = 0;
+					}
+					
+					this.setLeftHandlePosition(leftHandlePosition);
+					this._notifyDelegate();
+				},
+				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			},
+			timelineOverviewRightHandleGrabbed: {
+				move: function () {
+					var rightHandlePosition = this._startEventRightHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
+					
+					if (rightHandlePosition - 5 * 100 / this._startEventWidth < this._leftHandlePosition) {
+						rightHandlePosition = this._leftHandlePosition + 5 * 100 / this._startEventWidth;
+					} else if (rightHandlePosition > 100) {
+						rightHandlePosition = 100;
+					}
+					
+					this.setRightHandlePosition(rightHandlePosition);
+					this._notifyDelegate();
+				},
+				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			},
+			timelineOverviewMoveHandleGrabbed: {
+				move: function () {
+					var leftHandlePosition = this._startEventLeftHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth,
+					    rightHandlePosition = this._startEventRightHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
+					
+					if (leftHandlePosition < 0) {
+						rightHandlePosition += -leftHandlePosition;
+						leftHandlePosition = 0;
+					} else if (rightHandlePosition > 100) {
+						leftHandlePosition -= rightHandlePosition - 100;
+						rightHandlePosition = 100;
+					}
+
+					this.setLeftHandlePosition(leftHandlePosition);
+					this.setRightHandlePosition(rightHandlePosition);
+					this._notifyDelegate();
+				},
+				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			}
 		}
 	};
 	
