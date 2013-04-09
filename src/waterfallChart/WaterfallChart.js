@@ -32,6 +32,13 @@
 		this._shown = dev;
 		this._totalDuration = 0;
 		this._numberOfGridlines = 0;
+		this._timelineOverviewStart = 0;
+		this._timelineOverviewEnd = 100;
+		this._eventState = "idle";
+		this._eventInitPagePosition = null;
+		this._resizeInitSize = null;
+		this._timelineOverviewInitWidth = null;
+		this._shadowOverlayInitPosition = null;
 		this._element = null;
 		this._elements = {};
 		this._generate();
@@ -47,10 +54,14 @@
 			this._addStyleElement();
 
 			this._elements.table = this._element.querySelector(".jsp_wc_table");
+			
 			this._elements.timelineOverview = this._element.querySelector(".jsp_wc_timelineOverview");
-			this._elements.timelineOverviewLeftHandle = this._element.querySelector(".jsp_wc_timelineOverviewLeftHandle");
-			this._elements.timelineOverviewRightShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
-			this._elements.timelineOverviewGridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
+			this._elements.timelineOverviewGridlinesContainer = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
+			this._elements.timelineOverviewLeftShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
+			this._elements.timelineOverviewRightShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
+			this._elements.timelineOverviewLeftHandle = this._elements.timelineOverviewLeftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+			this._elements.timelineOverviewRightHandle = this._elements.timelineOverviewRightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+			
 			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
 			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
 			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
@@ -168,6 +179,7 @@
 			this._layoutElements();
 			this._attachEvents();
 			this._updateGridLines();
+			this._updateGridLineTimes();
 			this._createRootRecordViews();
 		},
 
@@ -178,7 +190,11 @@
 				scrollBarWidth = bodyOverlaysWidth - timeLineWidth;
 
 			this._elements.timelineOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
+			this._timelineOverviewInitWidth = this._elements.timelineOverview.offsetWidth;
+			
+			this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
 			this._elements.timelineOverviewRightShadowOverlay.style.right = - (scrollBarWidth + paddingRight) + "px";
+			this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
 			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 
@@ -188,36 +204,101 @@
 
 		_attachEvents: function() {
 			this._elements.resizeHandle.addEventListener("mousedown", this, false);
+			this._elements.timelineOverviewLeftHandle.addEventListener("mousedown", this, false);
+			this._elements.timelineOverviewRightHandle.addEventListener("mousedown", this, false);
+		},
+		
+		_eventStates: {
+			idle: {
+				start: function(event) {
+					event.preventDefault(); // Prevent text selection
+					document.addEventListener("mousemove", this, false);
+					document.addEventListener("mouseup", this, false);
+					this._eventInitPagePosition = {
+						x: event.pageX,
+						y: event.pageY
+					};
+					if (event.target === this._elements.resizeHandle) {
+						this._eventState = "resizeHandleGrabbed";
+						this._resizeInitSize = {
+							width: this._elements.table.clientWidth,
+							height: this._elements.scrollView.offsetHeight
+						};
+					} else if (event.target === this._elements.timelineOverviewLeftHandle) {
+						this._eventState = "timelineOverviewLeftHandleGrabbed";
+						this._shadowOverlayInitPosition = this._timelineOverviewStart;
+					} else if (event.target === this._elements.timelineOverviewRightHandle) {
+						this._eventState = "timelineOverviewRightHandleGrabbed";
+						this._shadowOverlayInitPosition = this._timelineOverviewEnd;
+					}
+				}
+			},
+			resizeHandleGrabbed: {
+				move: function() {
+					this._elements.table.style.width = (this._resizeInitSize.width + (event.pageX - this._eventInitPagePosition.x) * 2) + "px";
+					this._elements.scrollView.style.height = (this._resizeInitSize.height + (event.pageY - this._eventInitPagePosition.y)) + "px";
+					this._timelineOverviewInitWidth = this._elements.timelineOverview.offsetWidth;
+					this._updateGridLines();
+					this._updateGridLineTimes();
+				},
+				end: function() {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			},
+			timelineOverviewLeftHandleGrabbed: {
+				move: function () {
+					this._timelineOverviewStart = this._shadowOverlayInitPosition + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewInitWidth;
+					if (this._timelineOverviewStart + 5 * 100 / this._timelineOverviewInitWidth > this._timelineOverviewEnd) {
+						this._timelineOverviewStart = this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewInitWidth;
+					}
+					if (this._timelineOverviewStart < 0) {
+						this._timelineOverviewStart = 0;
+					}
+					this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
+					this._updateGridLineTimes();
+				},
+				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			},
+			timelineOverviewRightHandleGrabbed: {
+				move: function () {
+					this._timelineOverviewEnd = this._shadowOverlayInitPosition + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewInitWidth;
+					if (this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewInitWidth < this._timelineOverviewStart) {
+						this._timelineOverviewEnd = this._timelineOverviewStart + 5 * 100 / this._timelineOverviewInitWidth;
+					}
+					if (this._timelineOverviewEnd > 100) {
+						this._timelineOverviewEnd = 100;
+					}
+					this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
+					this._updateGridLineTimes();
+				},
+				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			}
 		},
 		
 		handleEvent: function(event) {
-			// TODO: refactor
-			if (event.type === "mousedown" && event.target === this._elements.resizeHandle) {
-				// Prevent text selection
-				event.preventDefault();
-				this._resizeStartPosition = {
-					x: event.pageX,
-					y: event.pageY
-				};
-				this._resizeStartSize = {
-					width: this._elements.table.clientWidth,
-					height: this._elements.scrollView.offsetHeight
-				};
-				document.addEventListener("mousemove", this, false);
-				document.addEventListener("mouseup", this, false);
-			} else {
-				switch (event.type) {
-					case "mousemove":
-						this._elements.table.style.width = (this._resizeStartSize.width + (event.pageX - this._resizeStartPosition.x) * 2) + "px";
-						this._elements.scrollView.style.height = (this._resizeStartSize.height + (event.pageY - this._resizeStartPosition.y)) + "px";
-						this._updateGridLines();
-						break;
-					case "mouseup":
-						document.removeEventListener("mousemove", this, false);
-						document.removeEventListener("mouseup", this, false);
-						break;
-				}
+			var eventHandlerName;
+			switch (event.type) {
+				case "mousedown":
+					eventHandlerName = "start";
+					break;
+				case "mousemove":
+					eventHandlerName = "move";
+					break;
+				case "mouseup":
+					eventHandlerName = "end";
+					break;
 			}
+			this._eventStates[this._eventState][eventHandlerName].call(this, event);
 		},
 		
 		_updateGridLines: function() {
@@ -226,7 +307,7 @@
 				gridLineElm, gridLineLabelElm,
 				minGridLineSpace = 60;
 
-			numOfColumns = Math.floor(this._elements.timeline.offsetWidth / minGridLineSpace);
+			numOfColumns = Math.floor(this._timelineOverviewInitWidth / minGridLineSpace);
 
 			if (numOfColumns < 1) {
 				numOfColumns = 1;
@@ -247,7 +328,7 @@
 				columnLeft = (columnWidthPercent * i) + "%";
 				this._elements.recordGridlinesContainer.childNodes[i].style.left = columnLeft;
 				this._elements.timelineGridlinesContainer.childNodes[i].style.left = columnLeft;
-				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
+//				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
 				this._elements.timelineOverviewGridlinesContainer.childNodes[i].style.left = columnLeft;
 				this._elements.timelineOverviewGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
 			}
@@ -267,13 +348,13 @@
 
 				gridLineElm = gridLineElm.cloneNode(false);
 				gridLineElm.appendChild(gridLineLabelElm);
-				this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
-
-				gridLineElm = gridLineElm.cloneNode(false);
-				gridLineLabelElm = gridLineLabelElm.cloneNode(false);
-				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
-				gridLineElm.appendChild(gridLineLabelElm);
 				this._elements.timelineOverviewGridlinesContainer.appendChild(gridLineElm);
+				
+				gridLineElm = gridLineElm.cloneNode(true);
+//				gridLineLabelElm = gridLineLabelElm.cloneNode(false);
+//				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
+//				gridLineElm.appendChild(gridLineLabelElm);
+				this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
 			}
 			
 			// Remove unnecessary grid-lines
@@ -284,6 +365,22 @@
 			}
 			
 			this._numberOfGridlines = numOfGridLines;
+		},
+
+		_updateGridLineTimes: function() {
+			var numOfColumns = this._numberOfGridlines - 1,
+				columnRatio = 1 / numOfColumns,
+				timelineStart = this._totalDuration * this._timelineOverviewStart / 100,
+				timelineDuration = this._totalDuration * (this._timelineOverviewEnd - this._timelineOverviewStart) / 100,
+				i, time, timeStr;
+
+			for (i = 0; i < this._numberOfGridlines; i++) {
+				time = timelineStart + timelineDuration * i * columnRatio;
+				timeStr = (time === 0 ? "0" : utils.timeString(time));
+				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
+			}
+			this._elements.records.style.width = this._timelineOverviewInitWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			this._elements.records.style.left = - this._timelineOverviewStart * this._timelineOverviewInitWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
 		},
 		
 		_createRootRecordViews: function () {

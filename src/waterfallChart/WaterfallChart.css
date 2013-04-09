@@ -70,12 +70,10 @@
 
 .jsp_wc_timelineOverviewLeftShadowOverlay {
     left: -20px;
-    right: 100%;
 }
 
 .jsp_wc_timelineOverviewRightShadowOverlay {
     right: 0;
-    left: 100%;
 }
 
 .jsp_wc_timelineOverviewLeftShadowOverlay .jsp_wc_timelineOverviewHandle {
@@ -96,6 +94,7 @@
     bottom: 0;
     left: 200px;
     right: 0;
+    overflow: hidden;
 }
 
 .jsp_wc_timeline {
