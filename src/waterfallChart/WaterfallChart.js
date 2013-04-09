@@ -181,7 +181,6 @@
 			this._layoutElements();
 			this._attachEvents();
 			this._updateGridLines();
-			this._updateGridLineTimes();
 			this._createRootRecordViews();
 		},
 
@@ -252,7 +251,6 @@
 					this._elements.scrollView.style.height = (this._resizeInitSize.height + (event.pageY - this._eventInitPagePosition.y)) + "px";
 					this._timelineOverviewWidth = this._elements.timelineOverview.offsetWidth;
 					this._updateGridLines();
-					this._updateGridLineTimes();
 				},
 				end: function() {
 					document.removeEventListener("mousemove", this, false);
@@ -341,7 +339,8 @@
 		
 		_updateGridLines: function() {
 			var numOfColumns, columnRatio, columnWidthPercent, columnLeft, numOfGridLines,
-				i, reuseNumberOfGridlines,
+				timelineStart, timelineDuration,
+				i, time, timeStr, reuseNumberOfGridlines,
 				gridLineElm, gridLineLabelElm,
 				minGridLineSpace = 60;
 
@@ -356,53 +355,69 @@
 			numOfGridLines = numOfColumns + 1;
 			
 			if (numOfGridLines === this._numberOfGridlines) {
-				return;
-			}
-
-			reuseNumberOfGridlines = Math.min(numOfGridLines, this._numberOfGridlines);
-			
-			// First, reuse all existing grid-line elements.
-			for (i = 0; i < reuseNumberOfGridlines; i++) {
-				columnLeft = (columnWidthPercent * i) + "%";
-				this._elements.recordGridlinesContainer.childNodes[i].style.left = columnLeft;
-				this._elements.timelineGridlinesContainer.childNodes[i].style.left = columnLeft;
-//				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
-				this._elements.timelineOverviewGridlinesContainer.childNodes[i].style.left = columnLeft;
-				this._elements.timelineOverviewGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = (i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio));
-			}
-			
-			// Create new grid-line elements
-			for (i; i < numOfGridLines; i++) {
-				columnLeft = (columnWidthPercent * i) + "%";
 				
-				gridLineElm = document.createElement("div");
-				gridLineElm.className = "jsp_wc_recordGridLine";
-				gridLineElm.style.left = columnLeft;
-				this._elements.recordGridlinesContainer.appendChild(gridLineElm);
-
-				gridLineLabelElm = document.createElement("div");
-				gridLineLabelElm.className = "jsp_wc_gridLineLabel";
-				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
-
-				gridLineElm = gridLineElm.cloneNode(false);
-				gridLineElm.appendChild(gridLineLabelElm);
-				this._elements.timelineOverviewGridlinesContainer.appendChild(gridLineElm);
+				timelineStart = this._totalDuration * this._timelineOverviewStart / 100;
+				timelineDuration = this._totalDuration * (this._timelineOverviewEnd - this._timelineOverviewStart) / 100;
 				
-				gridLineElm = gridLineElm.cloneNode(true);
-//				gridLineLabelElm = gridLineLabelElm.cloneNode(false);
-//				gridLineLabelElm.appendChild(document.createTextNode(i === 0 ? "0" : utils.timeString(this._totalDuration * i * columnRatio)));
-//				gridLineElm.appendChild(gridLineLabelElm);
-				this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
+				reuseNumberOfGridlines = Math.min(numOfGridLines, this._numberOfGridlines);
+				
+				// First, reuse all existing grid-line elements.
+				for (i = 0; i < reuseNumberOfGridlines; i++) {
+					columnLeft = (columnWidthPercent * i) + "%";
+					
+					this._elements.recordGridlinesContainer.childNodes[i].style.left = columnLeft;
+	
+					time = timelineStart + timelineDuration * i * columnRatio;
+					timeStr = (time === 0 ? "0" : utils.timeString(time));
+					this._elements.timelineGridlinesContainer.childNodes[i].style.left = columnLeft;
+					this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
+	
+					time = this._totalDuration * i * columnRatio;
+					timeStr = (time === 0 ? "0" : utils.timeString(time));
+					this._elements.timelineOverviewGridlinesContainer.childNodes[i].style.left = columnLeft;
+					this._elements.timelineOverviewGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
+				}
+				
+				// Create new grid-line elements
+				for (i; i < numOfGridLines; i++) {
+					columnLeft = (columnWidthPercent * i) + "%";
+					
+					gridLineElm = document.createElement("div");
+					gridLineElm.className = "jsp_wc_recordGridLine";
+					gridLineElm.style.left = columnLeft;
+					this._elements.recordGridlinesContainer.appendChild(gridLineElm);
+	
+					time = this._totalDuration * i * columnRatio;
+					timeStr = (time === 0 ? "0" : utils.timeString(time));
+					gridLineLabelElm = document.createElement("div");
+					gridLineLabelElm.className = "jsp_wc_gridLineLabel";
+					gridLineLabelElm.appendChild(document.createTextNode(timeStr));
+	
+					gridLineElm = gridLineElm.cloneNode(false);
+					gridLineElm.appendChild(gridLineLabelElm);
+					this._elements.timelineOverviewGridlinesContainer.appendChild(gridLineElm);
+					
+					time = timelineStart + timelineDuration * i * columnRatio;
+					timeStr = (time === 0 ? "0" : utils.timeString(time));
+					gridLineLabelElm = gridLineLabelElm.cloneNode(false);
+					gridLineLabelElm.appendChild(document.createTextNode(timeStr));
+					
+					gridLineElm = gridLineElm.cloneNode(false);
+					gridLineElm.appendChild(gridLineLabelElm);
+					this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
+				}
+				
+				// Remove unnecessary grid-lines
+				for (i = this._numberOfGridlines - 1; i >= numOfGridLines; i--) {
+					this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
+					this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
+					this._elements.timelineOverviewGridlinesContainer.removeChild(this._elements.timelineOverviewGridlinesContainer.lastChild);
+				}
+				
+				this._numberOfGridlines = numOfGridLines;
 			}
 			
-			// Remove unnecessary grid-lines
-			for (i = this._numberOfGridlines - 1; i >= numOfGridLines; i--) {
-				this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
-				this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
-				this._elements.timelineOverviewGridlinesContainer.removeChild(this._elements.timelineOverviewGridlinesContainer.lastChild);
-			}
-			
-			this._numberOfGridlines = numOfGridLines;
+			this._updateRecords();
 		},
 
 		_updateGridLineTimes: function() {
@@ -417,8 +432,13 @@
 				timeStr = (time === 0 ? "0" : utils.timeString(time));
 				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
 			}
+			
+			this._updateRecords();
+		},
+		
+		_updateRecords: function() {
 			this._elements.records.style.width = this._timelineOverviewWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
-			this._elements.records.style.left = - this._timelineOverviewStart * this._timelineOverviewWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			this._elements.records.style.left = -this._timelineOverviewStart * this._timelineOverviewWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
 		},
 		
 		_createRootRecordViews: function () {
@@ -523,7 +543,7 @@
 			this._unfoldRecordView(wcRecordView);
 		}
 	};
-
+	
 	/**
 	 * @param {WCRecord} wcRecord
 	 * @constructor
