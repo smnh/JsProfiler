@@ -84,6 +84,13 @@
     left: -2px;
 }
 
+.jsp_wc_timelineOverviewMoveHandle {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    cursor: move;
+}
+
 .jsp_wc_body {
     position: relative;
 }

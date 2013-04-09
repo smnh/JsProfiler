@@ -29,7 +29,7 @@
 	 */
 	function WaterfallChart() {
 		this._recordsArray = null;
-		this._shown = dev;
+//		this._shown = dev;
 		this._totalDuration = 0;
 		this._numberOfGridlines = 0;
 		this._timelineOverviewStart = 0;
@@ -37,8 +37,9 @@
 		this._eventState = "idle";
 		this._eventInitPagePosition = null;
 		this._resizeInitSize = null;
-		this._timelineOverviewInitWidth = null;
-		this._shadowOverlayInitPosition = null;
+		this._timelineOverviewWidth = null;
+		this._timelineOverviewInitStart = null;
+		this._timelineOverviewInitEnd = null;
 		this._element = null;
 		this._elements = {};
 		this._generate();
@@ -56,6 +57,7 @@
 			this._elements.table = this._element.querySelector(".jsp_wc_table");
 			
 			this._elements.timelineOverview = this._element.querySelector(".jsp_wc_timelineOverview");
+			this._elements.timelineOverviewMoveHandle = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewMoveHandle");
 			this._elements.timelineOverviewGridlinesContainer = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
 			this._elements.timelineOverviewLeftShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
 			this._elements.timelineOverviewRightShadowOverlay = this._elements.timelineOverview.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
@@ -174,7 +176,7 @@
 		 */
 		show: function () {
 			// TODO: TBD
-			this._shown = true;
+//			this._shown = true;
 			
 			this._layoutElements();
 			this._attachEvents();
@@ -190,11 +192,14 @@
 				scrollBarWidth = bodyOverlaysWidth - timeLineWidth;
 
 			this._elements.timelineOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
-			this._timelineOverviewInitWidth = this._elements.timelineOverview.offsetWidth;
+			this._timelineOverviewWidth = this._elements.timelineOverview.offsetWidth;
 			
 			this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
 			this._elements.timelineOverviewRightShadowOverlay.style.right = - (scrollBarWidth + paddingRight) + "px";
 			this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
+			this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
+			this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
+			
 			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 
@@ -204,6 +209,7 @@
 
 		_attachEvents: function() {
 			this._elements.resizeHandle.addEventListener("mousedown", this, false);
+			this._elements.timelineOverviewMoveHandle.addEventListener("mousedown", this, false);
 			this._elements.timelineOverviewLeftHandle.addEventListener("mousedown", this, false);
 			this._elements.timelineOverviewRightHandle.addEventListener("mousedown", this, false);
 		},
@@ -212,12 +218,15 @@
 			idle: {
 				start: function(event) {
 					event.preventDefault(); // Prevent text selection
+					
 					document.addEventListener("mousemove", this, false);
 					document.addEventListener("mouseup", this, false);
+					
 					this._eventInitPagePosition = {
 						x: event.pageX,
 						y: event.pageY
 					};
+					
 					if (event.target === this._elements.resizeHandle) {
 						this._eventState = "resizeHandleGrabbed";
 						this._resizeInitSize = {
@@ -226,10 +235,14 @@
 						};
 					} else if (event.target === this._elements.timelineOverviewLeftHandle) {
 						this._eventState = "timelineOverviewLeftHandleGrabbed";
-						this._shadowOverlayInitPosition = this._timelineOverviewStart;
+						this._timelineOverviewInitStart = this._timelineOverviewStart;
 					} else if (event.target === this._elements.timelineOverviewRightHandle) {
 						this._eventState = "timelineOverviewRightHandleGrabbed";
-						this._shadowOverlayInitPosition = this._timelineOverviewEnd;
+						this._timelineOverviewInitEnd = this._timelineOverviewEnd;
+					} else if (event.target === this._elements.timelineOverviewMoveHandle) {
+						this._eventState = "timelineOverviewMoveHandleGrabbed";
+						this._timelineOverviewInitStart = this._timelineOverviewStart;
+						this._timelineOverviewInitEnd = this._timelineOverviewEnd;
 					}
 				}
 			},
@@ -237,7 +250,7 @@
 				move: function() {
 					this._elements.table.style.width = (this._resizeInitSize.width + (event.pageX - this._eventInitPagePosition.x) * 2) + "px";
 					this._elements.scrollView.style.height = (this._resizeInitSize.height + (event.pageY - this._eventInitPagePosition.y)) + "px";
-					this._timelineOverviewInitWidth = this._elements.timelineOverview.offsetWidth;
+					this._timelineOverviewWidth = this._elements.timelineOverview.offsetWidth;
 					this._updateGridLines();
 					this._updateGridLineTimes();
 				},
@@ -249,14 +262,15 @@
 			},
 			timelineOverviewLeftHandleGrabbed: {
 				move: function () {
-					this._timelineOverviewStart = this._shadowOverlayInitPosition + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewInitWidth;
-					if (this._timelineOverviewStart + 5 * 100 / this._timelineOverviewInitWidth > this._timelineOverviewEnd) {
-						this._timelineOverviewStart = this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewInitWidth;
+					this._timelineOverviewStart = this._timelineOverviewInitStart + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
+					if (this._timelineOverviewStart + 5 * 100 / this._timelineOverviewWidth > this._timelineOverviewEnd) {
+						this._timelineOverviewStart = this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewWidth;
 					}
 					if (this._timelineOverviewStart < 0) {
 						this._timelineOverviewStart = 0;
 					}
 					this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
+					this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
 					this._updateGridLineTimes();
 				},
 				end: function () {
@@ -267,17 +281,41 @@
 			},
 			timelineOverviewRightHandleGrabbed: {
 				move: function () {
-					this._timelineOverviewEnd = this._shadowOverlayInitPosition + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewInitWidth;
-					if (this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewInitWidth < this._timelineOverviewStart) {
-						this._timelineOverviewEnd = this._timelineOverviewStart + 5 * 100 / this._timelineOverviewInitWidth;
+					this._timelineOverviewEnd = this._timelineOverviewInitEnd + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
+					if (this._timelineOverviewEnd - 5 * 100 / this._timelineOverviewWidth < this._timelineOverviewStart) {
+						this._timelineOverviewEnd = this._timelineOverviewStart + 5 * 100 / this._timelineOverviewWidth;
 					}
 					if (this._timelineOverviewEnd > 100) {
 						this._timelineOverviewEnd = 100;
 					}
 					this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
+					this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
 					this._updateGridLineTimes();
 				},
 				end: function () {
+					document.removeEventListener("mousemove", this, false);
+					document.removeEventListener("mouseup", this, false);
+					this._eventState = "idle";
+				}
+			},
+			timelineOverviewMoveHandleGrabbed: {
+				move: function() {
+					this._timelineOverviewStart = this._timelineOverviewInitStart + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
+					this._timelineOverviewEnd = this._timelineOverviewInitEnd + 100 * (event.pageX - this._eventInitPagePosition.x) / this._timelineOverviewWidth;
+					if (this._timelineOverviewStart < 0) {
+						this._timelineOverviewEnd += -this._timelineOverviewStart;
+						this._timelineOverviewStart = 0;
+					} else if (this._timelineOverviewEnd > 100) {
+						this._timelineOverviewStart -= this._timelineOverviewEnd - 100;
+						this._timelineOverviewEnd = 100;
+					}
+					this._elements.timelineOverviewLeftShadowOverlay.style.right = (100 - this._timelineOverviewStart) + "%";
+					this._elements.timelineOverviewMoveHandle.style.left = this._timelineOverviewStart + "%";
+					this._elements.timelineOverviewRightShadowOverlay.style.left = this._timelineOverviewEnd + "%";
+					this._elements.timelineOverviewMoveHandle.style.right = (100 - this._timelineOverviewEnd) + "%";
+					this._updateGridLineTimes();
+				},
+				end: function() {
 					document.removeEventListener("mousemove", this, false);
 					document.removeEventListener("mouseup", this, false);
 					this._eventState = "idle";
@@ -307,7 +345,7 @@
 				gridLineElm, gridLineLabelElm,
 				minGridLineSpace = 60;
 
-			numOfColumns = Math.floor(this._timelineOverviewInitWidth / minGridLineSpace);
+			numOfColumns = Math.floor(this._timelineOverviewWidth / minGridLineSpace);
 
 			if (numOfColumns < 1) {
 				numOfColumns = 1;
@@ -379,8 +417,8 @@
 				timeStr = (time === 0 ? "0" : utils.timeString(time));
 				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
 			}
-			this._elements.records.style.width = this._timelineOverviewInitWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
-			this._elements.records.style.left = - this._timelineOverviewStart * this._timelineOverviewInitWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			this._elements.records.style.width = this._timelineOverviewWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			this._elements.records.style.left = - this._timelineOverviewStart * this._timelineOverviewWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
 		},
 		
 		_createRootRecordViews: function () {
