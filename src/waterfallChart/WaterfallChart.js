@@ -63,9 +63,8 @@
 			
 			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
 			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
-			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridLinesContainer");
-			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
-			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridLinesContainer");
+			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridlinesContainer");
+			this._elements.recordGridlinesContainer = this._element.querySelector(".jsp_wc_recordGridlinesContainer");
 			this._elements.resizeHandle = this._element.querySelector(".jsp_wc_resizeHandle");
 			this._elements.scrollView = this._element.querySelector(".jsp_wc_scrollView");
 			this._elements.recordNamesBackground = this._element.querySelector(".jsp_wc_recordNamesBackground");
@@ -177,7 +176,7 @@
 			
 			this._layoutElements();
 			this._attachEvents();
-			this._updateGridLines();
+			this._updateGridlines();
 			this._createRootRecordViews();
 		},
 
@@ -231,7 +230,7 @@
 					this._elements.table.style.width = (this._startEventSize.width + (event.pageX - this._startEventPagePosition.x) * 2) + "px";
 					this._elements.scrollView.style.height = (this._startEventSize.height + (event.pageY - this._startEventPagePosition.y)) + "px";
 					this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
-					this._updateGridLines();
+					this._updateGridlines();
 				},
 				end: function() {
 					document.removeEventListener("mousemove", this, false);
@@ -257,14 +256,14 @@
 			this._eventStates[this._eventState][eventHandlerName].call(this, event);
 		},
 		
-		_updateGridLines: function() {
-			var numOfColumns, columnRatio, columnWidthPercent, columnLeft, numOfGridLines,
+		_updateGridlines: function() {
+			var numOfColumns, columnRatio, columnWidthPercent, columnLeft, numOfGridlines,
 				timelineStart, timelineDuration,
 				i, time, timeStr, reuseNumberOfGridlines,
-				gridLineElm, gridLineLabelElm,
-				minGridLineSpace = 60;
+				gridlineElm, gridlineLabelElm,
+				minGridlineSpace = 60;
 
-			numOfColumns = Math.floor(this._timelineOverviewWidth / minGridLineSpace);
+			numOfColumns = Math.floor(this._timelineOverviewWidth / minGridlineSpace);
 
 			if (numOfColumns < 1) {
 				numOfColumns = 1;
@@ -272,14 +271,14 @@
 
 			columnRatio = 1 / numOfColumns;
 			columnWidthPercent = 100 * columnRatio;
-			numOfGridLines = numOfColumns + 1;
+			numOfGridlines = numOfColumns + 1;
 			
-			if (numOfGridLines !== this._numberOfGridlines) {
+			if (numOfGridlines !== this._numberOfGridlines) {
 				
 				timelineStart = this._totalDuration * this._timelineOverviewStart / 100;
 				timelineDuration = this._totalDuration * (this._timelineOverviewEnd - this._timelineOverviewStart) / 100;
 				
-				reuseNumberOfGridlines = Math.min(numOfGridLines, this._numberOfGridlines);
+				reuseNumberOfGridlines = Math.min(numOfGridlines, this._numberOfGridlines);
 				
 				// First, reuse all existing grid-line elements.
 				for (i = 0; i < reuseNumberOfGridlines; i++) {
@@ -299,48 +298,48 @@
 				}
 				
 				// Create new grid-line elements
-				for (i; i < numOfGridLines; i++) {
+				for (i; i < numOfGridlines; i++) {
 					columnLeft = (columnWidthPercent * i) + "%";
 					
-					gridLineElm = document.createElement("div");
-					gridLineElm.className = "jsp_wc_recordGridLine";
-					gridLineElm.style.left = columnLeft;
-					this._elements.recordGridlinesContainer.appendChild(gridLineElm);
+					gridlineElm = document.createElement("div");
+					gridlineElm.className = "jsp_wc_recordGridline";
+					gridlineElm.style.left = columnLeft;
+					this._elements.recordGridlinesContainer.appendChild(gridlineElm);
 	
 					time = this._totalDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
-					gridLineLabelElm = document.createElement("div");
-					gridLineLabelElm.className = "jsp_wc_gridLineLabel";
-					gridLineLabelElm.appendChild(document.createTextNode(timeStr));
+					gridlineLabelElm = document.createElement("div");
+					gridlineLabelElm.className = "jsp_wc_gridlineLabel";
+					gridlineLabelElm.appendChild(document.createTextNode(timeStr));
 	
-					gridLineElm = gridLineElm.cloneNode(false);
-					gridLineElm.appendChild(gridLineLabelElm);
-					this._timelineOverview.gridlinesContainer.appendChild(gridLineElm);
+					gridlineElm = gridlineElm.cloneNode(false);
+					gridlineElm.appendChild(gridlineLabelElm);
+					this._timelineOverview.gridlinesContainer.appendChild(gridlineElm);
 					
 					time = timelineStart + timelineDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
-					gridLineLabelElm = gridLineLabelElm.cloneNode(false);
-					gridLineLabelElm.appendChild(document.createTextNode(timeStr));
+					gridlineLabelElm = gridlineLabelElm.cloneNode(false);
+					gridlineLabelElm.appendChild(document.createTextNode(timeStr));
 					
-					gridLineElm = gridLineElm.cloneNode(false);
-					gridLineElm.appendChild(gridLineLabelElm);
-					this._elements.timelineGridlinesContainer.appendChild(gridLineElm);
+					gridlineElm = gridlineElm.cloneNode(false);
+					gridlineElm.appendChild(gridlineLabelElm);
+					this._elements.timelineGridlinesContainer.appendChild(gridlineElm);
 				}
 				
 				// Remove unnecessary grid-lines
-				for (i = this._numberOfGridlines - 1; i >= numOfGridLines; i--) {
+				for (i = this._numberOfGridlines - 1; i >= numOfGridlines; i--) {
 					this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
 					this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
 					this._timelineOverview.gridlinesContainer.removeChild(this._timelineOverview.gridlinesContainer.lastChild);
 				}
 				
-				this._numberOfGridlines = numOfGridLines;
+				this._numberOfGridlines = numOfGridlines;
 			}
 			
 			this._updateRecords();
 		},
 
-		_updateGridLineTimes: function() {
+		_updateGridlineTimes: function() {
 			var numOfColumns = this._numberOfGridlines - 1,
 				columnRatio = 1 / numOfColumns,
 				timelineStart = this._totalDuration * this._timelineOverviewStart / 100,
@@ -449,31 +448,43 @@
 
 		/*
 		 * Timeline delegate methods
+		 * -------------------------
 		 */
 
+		/**
+		 * 
+		 * @param {TimelineOverview} timeline
+		 */
 		timelineDidChangedHandlesPosition: function(timeline) {
 			this._timelineOverviewStart = timeline.getLeftHandlePosition();
 			this._timelineOverviewEnd = timeline.getRightHandlePosition();
-			this._updateGridLineTimes();
+			this._updateGridlineTimes();
 		},
 		
 		/* 
 		 * WCRecordView delegate methods
+		 * -----------------------------
 		 */
-		
+
+		/**
+		 * @param {WCRecordView} wcRecordView
+		 */
 		wcRecordViewFolded: function (wcRecordView) {
 			var wcRecord = wcRecordView.wcRecord;
 			wcRecord.folded = true;
 			this._foldRecord(wcRecord);
 		},
 
+		/**
+		 * @param {WCRecordView} wcRecordView
+		 */
 		wcRecordViewUnfolded: function (wcRecordView) {
 			var wcRecord = wcRecordView.wcRecord;
 			wcRecord.folded = false;
 			this._unfoldRecordView(wcRecordView);
 		}
 	};
-
+	
 	/**
 	 * 
 	 * @param ancestorElement
@@ -491,7 +502,7 @@
 		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
 		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
 		
-		this.gridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridLinesContainer");
+		this.gridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridlinesContainer");
 		this.delegate = null;
 		
 		this._leftHandlePosition = null;
@@ -824,7 +835,7 @@
 		timeString: function(timeMs) {
 			var timeStr;
 			if (timeMs >= 1000) {
-				timeStr = Math.round(timeMs / 100) / 10 + " s";
+				timeStr = Math.round(timeMs / 10) / 100 + " s";
 			} else {
 				timeStr = Math.round(timeMs) + " ms";
 			}

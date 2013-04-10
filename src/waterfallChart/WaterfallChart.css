@@ -114,35 +114,35 @@
     border-bottom: 1px solid #8e8e8e;
 }
 
-.jsp_wc_gridLinesContainer {
+.jsp_wc_gridlinesContainer {
     position: absolute;
     left: 20px;
     bottom: 0;
 }
 
-.jsp_wc_timelineOverviewGridLinesContainer {
+.jsp_wc_timelineOverviewGridlinesContainer {
     position: relative;
     height: 100%;
 }
 
-.jsp_wc_timelineGridLinesContainer {
+.jsp_wc_timelineGridlinesContainer {
     top: 0;
     right: 5px;
 }
 
-.jsp_wc_recordGridLinesContainer {
+.jsp_wc_recordGridlinesContainer {
     top: 19px;
     z-index: 1;
 }
 
-.jsp_wc_recordGridLine {
+.jsp_wc_recordGridline {
     position: absolute;
     top: 0;
     bottom: 0;
     border-left: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.jsp_wc_gridLineLabel {
+.jsp_wc_gridlineLabel {
     position: absolute;
     font-size: 10px;
     color: #666666;
