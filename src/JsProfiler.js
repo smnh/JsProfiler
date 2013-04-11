@@ -1,4 +1,4 @@
-(function() {
+var JsProfiler = (function() {
 
 	/**
 	 * JavaScript Profiling Tool
@@ -9,8 +9,6 @@
 		this.reset();
 	}
 	
-	this.JsProfiler = JsProfiler;
-
     /**
      * Represents a profile Record.
 	 *
@@ -354,4 +352,6 @@
 		}
 	};
 	
-}).apply(window);
+	return JsProfiler;
+	
+}());

@@ -1,28 +1,9 @@
-(function () {
+var WaterfallChart = (function () {
 
 	var styleElement = null,
 		dev = true,
 		utils;
 
-	/**
-	 * @param {JsProfiler.Record} record
-	 * @param {Number} absoluteStart
-	 * @constructor
-	 */
-	function WCRecord(record, absoluteStart) {
-		this.name = record.name;
-		this.async = record.async;
-		this.start = record.start - absoluteStart;
-		this.end = record.end - absoluteStart;
-		this.duration = this.end - this.start;
-		this.self = this.duration;
-		this.asyncEnd = this.end;
-		this.asyncDuration = this.duration;
-		this.asyncTimes = [];
-		this.children = [];
-		this.folded = true;
-	}
-	
 	/**
 	 * A Waterfall Chart showing JavaScript Profiling Tool records.
 	 * @constructor
@@ -47,8 +28,6 @@
 		this._generate();
 	}
 
-	JsProfiler.WaterfallChart = WaterfallChart;
-	
 	WaterfallChart.prototype = {
 		constructor: WaterfallChart,
 		
@@ -56,11 +35,11 @@
 			this._createElement();
 			this._addStyleElement();
 
-			this._elements.table = this._element.querySelector(".jsp_wc_table");
 			
-			this._timelineOverview = new TimelineOverview(this._element);
+			this._timelineOverview = new WaterfallChart.TimelineOverview(this._element);
 			this._timelineOverview.delegate = this;
-			
+
+			this._elements.table = this._element.querySelector(".jsp_wc_table");
 			this._elements.bodyOverlays = this._element.querySelector(".jsp_wc_bodyOverlays");
 			this._elements.timeline = this._element.querySelector(".jsp_wc_timeline");
 			this._elements.timelineGridlinesContainer = this._element.querySelector(".jsp_wc_timelineGridlinesContainer");
@@ -133,13 +112,13 @@
 		
 		/**
 		 * @param {JsProfiler.Record} record
-		 * @returns {WCRecord}
+		 * @returns {WaterfallChart.WCRecordModel}
 		 * @private
 		 */
 		_processRecord: function (record) {
 			var i, wcRecord, childWcRecord;
 
-			wcRecord = new WCRecord(record, this._absoluteStart);
+			wcRecord = new WaterfallChart.WCRecordModel(record, this._absoluteStart);
 
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
@@ -377,14 +356,14 @@
 
 		/**
 		 * 
-		 * @param {WCRecord} wcRecord
-		 * @returns {WCRecordView}
+		 * @param {WaterfallChart.WCRecordModel} wcRecord
+		 * @returns {WaterfallChart.WCRecordView}
 		 * @private
 		 */
 		_createWcRecordView: function(wcRecord) {
 			var wcRecordView, i, asyncTime, decimalPlaces = 5;
 
-			wcRecordView = new WCRecordView(wcRecord);
+			wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
 			wcRecordView.delegate = this;
 
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces));
@@ -453,7 +432,7 @@
 
 		/**
 		 * 
-		 * @param {TimelineOverview} timeline
+		 * @param {WaterfallChart.TimelineOverview} timeline
 		 */
 		timelineDidChangedHandlesPosition: function(timeline) {
 			this._timelineOverviewStart = timeline.getLeftHandlePosition();
@@ -462,12 +441,12 @@
 		},
 		
 		/* 
-		 * WCRecordView delegate methods
+		 * WaterfallChart.WCRecordView delegate methods
 		 * -----------------------------
 		 */
 
 		/**
-		 * @param {WCRecordView} wcRecordView
+		 * @param {WaterfallChart.WCRecordView} wcRecordView
 		 */
 		wcRecordViewFolded: function (wcRecordView) {
 			var wcRecord = wcRecordView.wcRecord;
@@ -476,353 +455,12 @@
 		},
 
 		/**
-		 * @param {WCRecordView} wcRecordView
+		 * @param {WaterfallChart.WCRecordView} wcRecordView
 		 */
 		wcRecordViewUnfolded: function (wcRecordView) {
 			var wcRecord = wcRecordView.wcRecord;
 			wcRecord.folded = false;
 			this._unfoldRecordView(wcRecordView);
-		}
-	};
-	
-	/**
-	 * 
-	 * @param ancestorElement
-	 * @property {Node} gridlinesContainer
-	 * @property {Object} delegate The delegate may implement single method called timelineDidChangedHandlesPosition
-	 * @constructor
-	 */
-	function TimelineOverview(ancestorElement) {
-		this._element = ancestorElement.querySelector(".jsp_wc_timelineOverview");
-		
-		this._elements = {};
-		this._elements.moveHandle = this._element.querySelector(".jsp_wc_timelineOverviewMoveHandle");
-		this._elements.leftShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
-		this._elements.rightShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
-		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
-		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
-		
-		this.gridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridlinesContainer");
-		this.delegate = null;
-		
-		this._leftHandlePosition = null;
-		this._rightHandlePosition = null;
-		
-		this._eventState = "idle";
-		this._startEventWidth = null;
-		this._startEventPagePosition = null;
-		this._startEventLeftHandlePosition = null;
-		this._startEventRightHandlePosition = null;
-		this._attachEvents();
-	}
-	
-	TimelineOverview.prototype = {
-		constructor: TimelineOverview,
-		
-		setMarginRight: function(marginRight) {
-			this._element.style.marginRight = marginRight + "px";
-			this._elements.rightShadowOverlay.style.right = - marginRight + "px";
-		},
-		
-		getOffsetWidth: function() {
-			return this._element.offsetWidth;
-		},
-
-		getLeftHandlePosition: function() {
-			return this._leftHandlePosition;
-		},
-		
-		setLeftHandlePosition: function(leftHandlePosition) {
-			this._leftHandlePosition = leftHandlePosition;
-			this._elements.leftShadowOverlay.style.right = (100 - leftHandlePosition) + "%";
-			this._elements.moveHandle.style.left = leftHandlePosition + "%";
-		},
-
-		getRightHandlePosition: function () {
-			return this._rightHandlePosition;
-		},
-
-		setRightHandlePosition: function(rightHandlePosition) {
-			this._rightHandlePosition = rightHandlePosition;
-			this._elements.rightShadowOverlay.style.left = rightHandlePosition + "%";
-			this._elements.moveHandle.style.right = (100 - rightHandlePosition) + "%";
-		},
-		
-		_attachEvents: function() {
-			this._elements.moveHandle.addEventListener("mousedown", this, false);
-			this._elements.leftHandle.addEventListener("mousedown", this, false);
-			this._elements.rightHandle.addEventListener("mousedown", this, false);
-		},
-
-		_notifyDelegate: function() {
-			if (this.delegate && typeof this.delegate.timelineDidChangedHandlesPosition === "function") {
-				this.delegate.timelineDidChangedHandlesPosition(this);
-			}
-		},
-		
-		handleEvent: function(event) {
-			var eventHandlerName;
-			switch (event.type) {
-				case "mousedown":
-					eventHandlerName = "start";
-					break;
-				case "mousemove":
-					eventHandlerName = "move";
-					break;
-				case "mouseup":
-					eventHandlerName = "end";
-					break;
-			}
-			this._eventStates[this._eventState][eventHandlerName].call(this, event);
-		},
-
-		_eventStates: {
-			idle: {
-				start: function (event) {
-					event.preventDefault(); // Prevent text selection
-
-					document.addEventListener("mousemove", this, false);
-					document.addEventListener("mouseup", this, false);
-
-					this._startEventPagePosition = {
-						x: event.pageX,
-						y: event.pageY
-					};
-
-					this._startEventWidth = this.getOffsetWidth();
-					
-					if (event.target === this._elements.leftHandle) {
-						this._eventState = "timelineOverviewLeftHandleGrabbed";
-						this._startEventLeftHandlePosition = this._leftHandlePosition;
-					} else if (event.target === this._elements.rightHandle) {
-						this._eventState = "timelineOverviewRightHandleGrabbed";
-						this._startEventRightHandlePosition = this._rightHandlePosition;
-					} else if (event.target === this._elements.moveHandle) {
-						this._eventState = "timelineOverviewMoveHandleGrabbed";
-						this._startEventLeftHandlePosition = this._leftHandlePosition;
-						this._startEventRightHandlePosition = this._rightHandlePosition;
-					}
-				}
-			},
-			timelineOverviewLeftHandleGrabbed: {
-				move: function () {
-					var leftHandlePosition = this._startEventLeftHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
-					
-					if (leftHandlePosition + 5 * 100 / this._startEventWidth > this._rightHandlePosition) {
-						leftHandlePosition = this._rightHandlePosition - 5 * 100 / this._startEventWidth;
-					} else if (leftHandlePosition < 0) {
-						leftHandlePosition = 0;
-					}
-					
-					this.setLeftHandlePosition(leftHandlePosition);
-					this._notifyDelegate();
-				},
-				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			},
-			timelineOverviewRightHandleGrabbed: {
-				move: function () {
-					var rightHandlePosition = this._startEventRightHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
-					
-					if (rightHandlePosition - 5 * 100 / this._startEventWidth < this._leftHandlePosition) {
-						rightHandlePosition = this._leftHandlePosition + 5 * 100 / this._startEventWidth;
-					} else if (rightHandlePosition > 100) {
-						rightHandlePosition = 100;
-					}
-					
-					this.setRightHandlePosition(rightHandlePosition);
-					this._notifyDelegate();
-				},
-				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			},
-			timelineOverviewMoveHandleGrabbed: {
-				move: function () {
-					var leftHandlePosition = this._startEventLeftHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth,
-					    rightHandlePosition = this._startEventRightHandlePosition + 100 * (event.pageX - this._startEventPagePosition.x) / this._startEventWidth;
-					
-					if (leftHandlePosition < 0) {
-						rightHandlePosition += -leftHandlePosition;
-						leftHandlePosition = 0;
-					} else if (rightHandlePosition > 100) {
-						leftHandlePosition -= rightHandlePosition - 100;
-						rightHandlePosition = 100;
-					}
-
-					this.setLeftHandlePosition(leftHandlePosition);
-					this.setRightHandlePosition(rightHandlePosition);
-					this._notifyDelegate();
-				},
-				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
-				}
-			}
-		}
-	};
-	
-	/**
-	 * @param {WCRecord} wcRecord
-	 * @constructor
-	 */
-	function WCRecordView(wcRecord) {
-		
-		var hasChildren = wcRecord.children.length > 0,
-			isAsync = wcRecord.asyncDuration > wcRecord.duration;
-		
-		this.wcRecord = wcRecord;
-		this.folded = wcRecord.folded;
-		this.childWcRecordViews = [];
-		this.delegate = null;
-		
-		this._generateRecordNameElement(wcRecord.name);
-		this._generateRecordElement(hasChildren, isAsync);
-	}
-	
-	WCRecordView.prototype = {
-		constructor: WaterfallChart,
-
-		/**
-		 * Sets the start position of the record view by applying passed string to the margin-left property of the
-		 * record element.
-		 * 
-		 * @param {String} start The start position of the record in form of CSS length of percentage.
-		 */
-		setStartPosition: function (start) {
-			this.recordElm.style.marginLeft = start;
-		},
-
-		setAsyncDuration: function (asyncDuration) {
-			if (this.asyncRecordBarElm !== null) {
-				this.asyncRecordBarElm.style.width = asyncDuration;
-			}
-		},
-
-		addChildRecordBar: function(start, duration) {
-			var childRecordBar = document.createElement("div");
-			childRecordBar.className = "jsp_wc_recordBar jsp_wc_childRecordBar";
-			childRecordBar.style.left = start;
-			childRecordBar.style.width = duration;
-			this.selfRecordBarElm.parentNode.insertBefore(childRecordBar, this.selfRecordBarElm);
-		},
-		
-		setSelfDuration: function (selfDuration) {
-			this.selfRecordBarElm.style.width = selfDuration;
-		},
-
-		_generateRecordNameElement: function(recordName) {
-			var recordNameElement;
-
-			recordNameElement = document.createElement("div");
-			recordNameElement.className = "jsp_wc_row";
-			recordNameElement.appendChild(document.createTextNode(recordName));
-			
-			this.recordNameContainerElm = document.createElement("div");
-			this.recordNameContainerElm.className = "jsp_wc_recordNameContainer";
-			this.recordNameContainerElm.appendChild(recordNameElement);
-		},
-
-		_generateRecordElement: function(hasChildren, isAsync) {
-			var containmentTools, recordBracket, recordBarsContainer;
-			
-			this.recordElm = document.createElement("div");
-			this.recordElm.className = "jsp_wc_record";
-
-			if (hasChildren) {
-				containmentTools = document.createElement("div");
-				containmentTools.className = "jsp_wc_containmentTools";
-				
-				recordBracket = document.createElement("div");
-				recordBracket.className = "jsp_wc_recordBracket";
-				containmentTools.appendChild(recordBracket);
-
-				this.foldHandleElm = document.createElement("div");
-				this.foldHandleElm.className = this.folded ? "jsp_wc_foldHandleFolded" : "jsp_wc_foldHandleUnfolded";
-				this.foldHandleElm.addEventListener("click", this, false);
-				containmentTools.appendChild(this.foldHandleElm);
-				
-				this.recordElm.appendChild(containmentTools);
-			} else {
-				this.foldHandleElm = null;
-			}
-			
-			recordBarsContainer = document.createElement("div");
-			recordBarsContainer.className = "jsp_wc_recordBarsContainer";
-			
-			if (isAsync) {
-				this.asyncRecordBarElm = document.createElement("div");
-				this.asyncRecordBarElm.className = "jsp_wc_recordBar jsp_wc_asyncRecordBar";
-				recordBarsContainer.appendChild(this.asyncRecordBarElm);
-			} else {
-				this.asyncRecordBarElm = null;
-			}
-			
-			this.selfRecordBarElm = document.createElement("div");
-			this.selfRecordBarElm.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";
-			recordBarsContainer.appendChild(this.selfRecordBarElm);
-			
-			this.recordElm.appendChild(recordBarsContainer);
-
-			this.recordContainerElm = document.createElement("div");
-			this.recordContainerElm.className = "jsp_wc_recordContainer";
-			this.recordContainerElm.appendChild(this.recordElm);
-		},
-		
-		addChildWcRecordView: function(childWcRecordView) {
-			this.childWcRecordViews.push(childWcRecordView);
-			this.recordContainerElm.appendChild(childWcRecordView.recordContainerElm);
-			this.recordNameContainerElm.appendChild(childWcRecordView.recordNameContainerElm);
-		},
-		
-		removeAllChildWcRecordView: function() {
-			var childWcRecordView;
-			
-			while (this.childWcRecordViews.length) {
-				childWcRecordView = this.childWcRecordViews.pop();
-				childWcRecordView.recordContainerElm.parentNode.removeChild(childWcRecordView.recordContainerElm);
-				childWcRecordView.recordNameContainerElm.parentNode.removeChild(childWcRecordView.recordNameContainerElm);
-			}
-		},
-		
-		unfold: function unfold() {
-			this.folded = false;
-			this.foldHandleElm.className = "jsp_wc_foldHandleUnfolded";
-			
-			if (this.delegate && typeof this.delegate.wcRecordViewUnfolded === "function") {
-				this.delegate.wcRecordViewUnfolded(this);
-			}
-		},
-		
-		fold: function fold() {
-			this.folded = true;
-			this.foldHandleElm.className = "jsp_wc_foldHandleFolded";
-			
-			this.removeAllChildWcRecordView();
-			
-			if (this.delegate && typeof this.delegate.wcRecordViewFolded === "function") {
-				this.delegate.wcRecordViewFolded(this);
-			}
-		},
-		
-		toggle: function toggle() {
-			if (!this.folded) {
-				this.fold();
-			} else {
-				this.unfold();
-			}
-		},
-		
-		handleEvent: function(event) {
-			if (event.target === this.foldHandleElm) {
-				this.toggle();
-			}
 		}
 	};
 	
@@ -843,4 +481,7 @@
 		}
 	};
 	
+	return WaterfallChart;
 }());
+
+JsProfiler.WaterfallChart = WaterfallChart;
