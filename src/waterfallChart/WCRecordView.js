@@ -138,8 +138,6 @@ WaterfallChart.WCRecordView = (function () {
 			this.folded = true;
 			this.foldHandleElm.className = "jsp_wc_foldHandleFolded";
 
-			this.removeAllChildWcRecordView();
-
 			if (this.delegate && typeof this.delegate.wcRecordViewFolded === "function") {
 				this.delegate.wcRecordViewFolded(this);
 			}
