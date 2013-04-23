@@ -13,56 +13,7 @@
 		<script type="text/javascript" src="WCRecordView.js"></script>
 		<script type="text/javascript" src="TimelineOverview.js"></script>
 		<script type="text/javascript" src="../JsProfilerTest.js"></script>
-		<script type="text/javascript">
-			var profiler = new JsProfiler(),
-				rootRecord, wfChart;
-			
-			profiler.registerFunction(window, "doSomething", "window");
-			profiler.registerClass(window, "MyClass");
-			profiler.registerObject(obj, "obj");
-
-			function startProfiler() {
-				var intervalRecord, interval, count = 0, numOfIntervals = 2, timeoutCount = 0;
-				
-				profiler.reset();
-				profiler.start();
-
-				profiler.begin("synchWrapper");
-				
-				intervalRecord = profiler.begin("setInterval");
-				interval = window.setInterval(function() {
-					
-					var setTiemoutRecord = profiler.begin("setTiemout", intervalRecord);
-					window.setTimeout(function() {
-						profiler.setAsyncContext(setTiemoutRecord);
-						doSomething();
-						profiler.removeAsyncContext();
-						if (++timeoutCount === numOfIntervals) {
-							stopProfiler();
-						}
-					}, 500);
-					profiler.end("setTiemout");
-					
-					if (++count === numOfIntervals) {
-						window.clearInterval(interval);
-					}
-				}, 2000);
-				profiler.end("setInterval");
-
-				doSomething();
-				profiler.end("synchWrapper");
-			}
-			
-			function stopProfiler() {
-				profiler.stop();
-
-				rootRecord = profiler.getRootRecord();
-
-				wfChart = new JsProfiler.WaterfallChart();
-				wfChart.setResults(rootRecord);
-				wfChart.show();
-			}
-		</script>
+		<script type="text/javascript" src="WaterfallChartTest.js"></script>
 	</head>
 	<body onload="startProfiler();">
 		<!-- HTML_BEGIN -->
@@ -70,6 +21,11 @@
 			<div class="jsp_wc_curtain jsp_fillParent"></div>
 			<div class="jsp_wc_table">
 				<div class="jsp_wc_header">
+					<div class="jsp_wc_leftColumn">
+						<div class="jsp_wc_headerButton jsp_wc_closeHandle"></div>
+						<div class="jsp_wc_headerButton jsp_wc_maximizeHandle"></div>
+						<div class="jsp_wc_headerButton jsp_wc_moveHandle"></div>
+					</div>
 					<div class="jsp_wc_rightColumn">
 						<div class="jsp_wc_timelineOverview">
 							<div class="jsp_wc_timelineOverviewGridlinesContainer"></div>

@@ -42,14 +42,68 @@
     background-color: #ffffff;
 }
 
+.jsp_wc_leftColumn {
+    position: absolute;
+    width: 199px;
+    font-size: 12px;
+}
+
 .jsp_wc_header {
+    position: relative;
+    height: 18px;
     border-bottom: 1px solid #8e8e8e;
+}
+
+.jsp_wc_header .jsp_wc_rightColumn {
+    height: 100%;
+}
+
+.jsp_wc_header .jsp_wc_leftColumn {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.jsp_wc_headerButton {
+    float: left;
+    cursor: pointer;
+    margin: 1px;
+    background: #ffffff 50% no-repeat;
+    border-radius: 4px;
+}
+
+.jsp_wc_closeHandle {
+    padding: 3px;
+    width: 10px;
+    height: 10px;
+    background-size: 10px 10px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAd0lEQVR42q2UwQ3AIAwDswGjdP8pGCUjpLFK5UelOg8jWUJgjoQAUVXR7Wpla7cWxv4Ez/Em1j5jhBREmIDQn4dByAemIYS9EwqGvvBKw5p4hrvpqGMWuk59eJi6GKK8AuIEWVOzHrat/LYLaXsitkdr+0ZsH9sNedG0ZKlUyYoAAAAASUVORK5CYII=);
+}
+
+.jsp_wc_maximizeHandle {
+    padding: 2px;
+    width: 12px;
+    height: 12px;
+    background-size: 12px 12px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAuklEQVR42rWUgQmAIBBF26BRGsFRGqERHKERHKERHOFGaQS7A+HCpA99E14gxPvov5pKKTS6QiUqu5IVUU5GuioFQAXMioCADER0yDHi/tNLQPxH7my0HBBGy1PTyfJx5vvytnjbjzpBek5XDWQ7cHkf+heB3iElGPIaMHfRjIpkAuwhFgLmPHzoaVpuAmnk9AlePhxW7gEbJ8cBEcnZgKMv9+LZgOzC8SG2ThMBVjZA6kn22knwmee4APXhHShas1wVAAAAAElFTkSuQmCC);
+}
+
+.jsp_wc_maximizeHandle.jsp_wc_minimizeHandle {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAA20lEQVR42q2UYQ2EMAxGz0ElTAISKuEkIAUJSJgEJEwCEpCAhNJLSiDLrmPfIHk/4Md7LF36EZFX0WdWFoV+76iElFD4HhUxVoXQACu7MpTlVwQNjIqckZLciGhgUqRC7JlBfCLvCaSavDewOYHhjYA47PcIIg8mqkUCGuDSfbe5zHbDvgqhATIBnxKPp0K+/1UL+V9Ndsxkx5YMRgPBBiMVAhSwyFCLuDI/cEWcwIYEWnZMQgLAAmsjk7tMSMCTx2zwIxpY3X1+RRgNUBaJfxYcwTOwyKLMgMTlANiL/k0esdyzAAAAAElFTkSuQmCC);
+}
+
+.jsp_wc_moveHandle {
+    padding: 2px;
+    width: 12px;
+    height: 12px;
+    background-size: 12px 12px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAcUlEQVR42t2WQQrAIAwE+/9P5Klbva5CHcIiVMhJMgOJRh9JxzFWzSA5FK4ZRILhVALhXALgSMJ74GDbvyzwsgDBZ+625g2BXLLAuwKXGLwfLoFwLokLoiWKNjl6TKMX7eezKD+uuaTST+b9Rz/+bXkB0gX8LemkC6EAAAAASUVORK5CYII=);
+    cursor: move;
 }
 
 .jsp_wc_timelineOverview {
     position: relative;
     margin-left: 20px;
-    height: 18px;
+    height: 100%;
 }
 
 .jsp_wc_timelineOverviewShadowOverlay {
@@ -169,18 +223,16 @@
 
 /***** left column *****/
 
-.jsp_wc_leftColumn {
-    position: absolute;
-    width: 199px;
-    font-size: 12px;
-    background-color: #d5dde5;
-}
-
 .jsp_wc_recordNamesHeader {
     font-weight: bold;
     color: #5c6e81;
     height: 19px;
     line-height: 19px;
+    background-color: #d5dde5;
+}
+
+.jsp_wc_recordNamesBackground {
+    background-color: #d5dde5;
 }
 
 .jsp_wc_recordNamesBackground .jsp_wc_row:nth-child(odd) {
@@ -190,7 +242,7 @@
 .jsp_wc_recordNames {
     position: absolute;
     left: 0;
-    top: 18px;
+    top: 19px;
 }
 
 .jsp_wc_leftColumn .jsp_wc_row {
