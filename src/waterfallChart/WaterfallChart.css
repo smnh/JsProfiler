@@ -5,11 +5,11 @@
     width: 100%;
     height: 100%;
 }
-.jsp_wc_curtain {
+.jspwc_curtain {
     background-color: #000000;
     opacity: 0.5;
 }
-.jsp_wc_table {
+.jspwc_table {
     position: relative;
     margin: 20px auto 0;
     width: 800px;
@@ -31,39 +31,39 @@
 }
 
 
-.jsp_wc_row {
+.jspwc_row {
     height: 18px;
     line-height: 18px;
 }
 
-.jsp_wc_rightColumn {
+.jspwc_rightColumn {
     margin-left: 199px;
     border-left: 1px solid #8e8e8e;
     background-color: #ffffff;
 }
 
-.jsp_wc_leftColumn {
+.jspwc_leftColumn {
     position: absolute;
     width: 199px;
     font-size: 12px;
 }
 
-.jsp_wc_header {
+.jspwc_header {
     position: relative;
     height: 18px;
     border-bottom: 1px solid #8e8e8e;
 }
 
-.jsp_wc_header .jsp_wc_rightColumn {
+.jspwc_header .jspwc_rightColumn {
     height: 100%;
 }
 
-.jsp_wc_header .jsp_wc_leftColumn {
+.jspwc_header .jspwc_leftColumn {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-.jsp_wc_headerButton {
+.jspwc_headerButton {
     float: left;
     cursor: pointer;
     margin: 1px;
@@ -71,7 +71,7 @@
     border-radius: 4px;
 }
 
-.jsp_wc_closeHandle {
+.jspwc_closeHandle {
     padding: 3px;
     width: 10px;
     height: 10px;
@@ -79,7 +79,7 @@
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAd0lEQVR42q2UwQ3AIAwDswGjdP8pGCUjpLFK5UelOg8jWUJgjoQAUVXR7Wpla7cWxv4Ez/Em1j5jhBREmIDQn4dByAemIYS9EwqGvvBKw5p4hrvpqGMWuk59eJi6GKK8AuIEWVOzHrat/LYLaXsitkdr+0ZsH9sNedG0ZKlUyYoAAAAASUVORK5CYII=);
 }
 
-.jsp_wc_maximizeHandle {
+.jspwc_maximizeHandle {
     padding: 2px;
     width: 12px;
     height: 12px;
@@ -87,11 +87,11 @@
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAuklEQVR42rWUgQmAIBBF26BRGsFRGqERHKERHKERHOFGaQS7A+HCpA99E14gxPvov5pKKTS6QiUqu5IVUU5GuioFQAXMioCADER0yDHi/tNLQPxH7my0HBBGy1PTyfJx5vvytnjbjzpBek5XDWQ7cHkf+heB3iElGPIaMHfRjIpkAuwhFgLmPHzoaVpuAmnk9AlePhxW7gEbJ8cBEcnZgKMv9+LZgOzC8SG2ThMBVjZA6kn22knwmee4APXhHShas1wVAAAAAElFTkSuQmCC);
 }
 
-.jsp_wc_maximizeHandle.jsp_wc_minimizeHandle {
+.jspwc_maximizeHandle.jspwc_minimizeHandle {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAA20lEQVR42q2UYQ2EMAxGz0ElTAISKuEkIAUJSJgEJEwCEpCAhNJLSiDLrmPfIHk/4Md7LF36EZFX0WdWFoV+76iElFD4HhUxVoXQACu7MpTlVwQNjIqckZLciGhgUqRC7JlBfCLvCaSavDewOYHhjYA47PcIIg8mqkUCGuDSfbe5zHbDvgqhATIBnxKPp0K+/1UL+V9Ndsxkx5YMRgPBBiMVAhSwyFCLuDI/cEWcwIYEWnZMQgLAAmsjk7tMSMCTx2zwIxpY3X1+RRgNUBaJfxYcwTOwyKLMgMTlANiL/k0esdyzAAAAAElFTkSuQmCC);
 }
 
-.jsp_wc_moveHandle {
+.jspwc_moveHandle {
     padding: 2px;
     width: 12px;
     height: 12px;
@@ -100,20 +100,20 @@
     cursor: move;
 }
 
-.jsp_wc_timelineOverview {
+.jspwc_timelineOverview {
     position: relative;
     margin-left: 20px;
     height: 100%;
 }
 
-.jsp_wc_timelineOverviewShadowOverlay {
+.jspwc_timelineOverviewShadowOverlay {
     position: absolute;
     top: 0;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-.jsp_wc_timelineOverviewHandle {
+.jspwc_timelineOverviewHandle {
     position: absolute;
     height: 100%;
     width: 5px;
@@ -122,34 +122,34 @@
     cursor: ew-resize;
 }
 
-.jsp_wc_timelineOverviewLeftShadowOverlay {
+.jspwc_timelineOverviewLeftShadowOverlay {
     left: -20px;
 }
 
-.jsp_wc_timelineOverviewRightShadowOverlay {
+.jspwc_timelineOverviewRightShadowOverlay {
     right: 0;
 }
 
-.jsp_wc_timelineOverviewLeftShadowOverlay .jsp_wc_timelineOverviewHandle {
+.jspwc_timelineOverviewLeftShadowOverlay .jspwc_timelineOverviewHandle {
     right: -2px;
 }
 
-.jsp_wc_timelineOverviewRightShadowOverlay .jsp_wc_timelineOverviewHandle {
+.jspwc_timelineOverviewRightShadowOverlay .jspwc_timelineOverviewHandle {
     left: -2px;
 }
 
-.jsp_wc_timelineOverviewMoveHandle {
+.jspwc_timelineOverviewMoveHandle {
     position: absolute;
     top: 0;
     height: 100%;
     cursor: move;
 }
 
-.jsp_wc_body {
+.jspwc_body {
     position: relative;
 }
 
-.jsp_wc_bodyOverlays {
+.jspwc_bodyOverlays {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -158,7 +158,7 @@
     overflow: hidden;
 }
 
-.jsp_wc_timeline {
+.jspwc_timeline {
     position: absolute;
     z-index: 3;
     opacity: 0.8;
@@ -168,35 +168,35 @@
     border-bottom: 1px solid #8e8e8e;
 }
 
-.jsp_wc_gridlinesContainer {
+.jspwc_gridlinesContainer {
     position: absolute;
     left: 20px;
     bottom: 0;
 }
 
-.jsp_wc_timelineOverviewGridlinesContainer {
+.jspwc_timelineOverviewGridlinesContainer {
     position: relative;
     height: 100%;
 }
 
-.jsp_wc_timelineGridlinesContainer {
+.jspwc_timelineGridlinesContainer {
     top: 0;
     right: 5px;
 }
 
-.jsp_wc_recordGridlinesContainer {
+.jspwc_recordGridlinesContainer {
     top: 19px;
     z-index: 1;
 }
 
-.jsp_wc_recordGridline {
+.jspwc_recordGridline {
     position: absolute;
     top: 0;
     bottom: 0;
     border-left: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.jsp_wc_gridlineLabel {
+.jspwc_gridlineLabel {
     position: absolute;
     font-size: 10px;
     color: #666666;
@@ -204,7 +204,7 @@
     right: 5px;
 }
 
-.jsp_wc_resizeHandle {
+.jspwc_resizeHandle {
     position: absolute;
     bottom: 1px;
     right: 1px;
@@ -214,7 +214,7 @@
     cursor: nwse-resize;
 }
 
-.jsp_wc_scrollView {
+.jspwc_scrollView {
     position: relative;
     height: 400px;
     overflow-y: scroll;
@@ -223,7 +223,7 @@
 
 /***** left column *****/
 
-.jsp_wc_recordNamesHeader {
+.jspwc_recordNamesHeader {
     font-weight: bold;
     color: #5c6e81;
     height: 19px;
@@ -231,33 +231,33 @@
     background-color: #d5dde5;
 }
 
-.jsp_wc_recordNamesBackground {
+.jspwc_recordNamesBackground {
     background-color: #d5dde5;
 }
 
-.jsp_wc_recordNamesBackground .jsp_wc_row:nth-child(odd) {
+.jspwc_recordNamesBackground .jspwc_row:nth-child(odd) {
     background-color: #cad1d9;
 }
 
-.jsp_wc_recordNames {
+.jspwc_recordNames {
     position: absolute;
     left: 0;
     top: 19px;
 }
 
-.jsp_wc_leftColumn .jsp_wc_row {
+.jspwc_leftColumn .jspwc_row {
     padding: 0 10px;
 }
 
 /***** right column *****/
 
-.jsp_wc_body .jsp_wc_rightColumn {
+.jspwc_body .jspwc_rightColumn {
     position: relative;
     overflow: hidden;
     min-height: 100%;
 }
 
-.jsp_wc_recordRowsBackground {
+.jspwc_recordRowsBackground {
     position: absolute;
     z-index: 0;
     left: 0;
@@ -265,31 +265,31 @@
     padding-top: 19px;
 }
 
-.jsp_wc_recordRowsBackground .jsp_wc_row:nth-child(odd) {
+.jspwc_recordRowsBackground .jspwc_row:nth-child(odd) {
     background-color: #f2f2f2;
 }
 
-.jsp_wc_records {
+.jspwc_records {
     position: relative;
     z-index: 2;
     padding: 19px 5px 0 20px;
 }
 
-.jsp_wc_recordContainer {
+.jspwc_recordContainer {
     position: relative;
 }
 
-.jsp_wc_record {
+.jspwc_record {
     margin-right: auto;
 }
 
-.jsp_wc_containmentTools {
+.jspwc_containmentTools {
     position: absolute;
     top: 0;
     bottom: 0;
 }
 
-.jsp_wc_recordBracket {
+.jspwc_recordBracket {
     position: absolute;
     left: -16px;
     top: 0;
@@ -299,7 +299,7 @@
     border-right: none;
 }
 
-.jsp_wc_foldHandleFolded {
+.jspwc_foldHandleFolded {
     position: absolute;
     left: -12px;
     top: 4px;
@@ -311,7 +311,7 @@
     cursor: pointer;
 }
 
-.jsp_wc_foldHandleUnfolded {
+.jspwc_foldHandleUnfolded {
     position: absolute;
     left: -13px;
     top: 5px;
@@ -323,11 +323,11 @@
     cursor: pointer;
 }
 
-.jsp_wc_recordBarsContainer {
+.jspwc_recordBarsContainer {
     height: 18px;
 }
 
-.jsp_wc_recordBar {
+.jspwc_recordBar {
     position: absolute;
     top: 4px;
     height: 10px;
@@ -339,14 +339,14 @@
             box-sizing: border-box;
 }
 
-.jsp_wc_recordBar.jsp_wc_selfRecordBar {
+.jspwc_recordBar.jspwc_selfRecordBar {
     
 }
 
-.jsp_wc_recordBar.jsp_wc_asyncRecordBar {
+.jspwc_recordBar.jspwc_asyncRecordBar {
     opacity: 0.3;
 }
 
-.jsp_wc_recordBar.jsp_wc_childRecordBar {
+.jspwc_recordBar.jspwc_childRecordBar {
     opacity: 0.6;
 }

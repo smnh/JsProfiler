@@ -10,7 +10,7 @@ var WaterfallChart = (function () {
 	 */
 	function WaterfallChart() {
 		this._recordsArray = null;
-//		this._shown = dev;
+		this._shown = false;
 		
 		this._totalDuration = 0;
 		
@@ -27,11 +27,12 @@ var WaterfallChart = (function () {
 
 			this._wcTableView = new WaterfallChart.WCTableView(this._element);
 			this._wcTableView.dataSource = this;
+			this._wcTableView.delegate = this;
 		},
 
 		_createElement: function () {
 			if (dev) {
-				this._element = document.getElementsByClassName("jsp_wc_container")[0];
+				this._element = document.getElementsByClassName("jspwc_container")[0];
 			} else {
 				this._element = window.document.createElement("div");
 				this._element.innerHTML = "__HTML__";
@@ -121,17 +122,37 @@ var WaterfallChart = (function () {
 		/**
 		 * Shows the waterfall chart.
 		 */
-		show: function () {
-			// TODO: TBD
-//			this._shown = true;
+		show: function() {
+			if (this._shown) {
+				return;
+			}
+			this._shown = true;
+			
+			document.body.appendChild(this._element);
 			
 			this._wcTableView.layoutElements();
 			this._wcTableView.reloadData();
+		},
+		
+		hide: function() {
+			if (!this._shown) {
+				return;
+			}
+			this._shown = false;
+			this._element.parentNode.removeChild(this._element);
 		},
 
 		/* 
 		 * WaterfallChart.WCTableView delegate methods
 		 * -------------------------------------------
+		 */
+		wcTableViewDidClickClose: function(wcTableView) {
+			this.hide();
+		},
+		
+		/* 
+		 * WaterfallChart.WCTableView dataSource methods
+		 * ---------------------------------------------
 		 */
 		numberOfChildWcRecordViews: function(wcRecordView) {
 			if (wcRecordView) {

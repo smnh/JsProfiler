@@ -41,7 +41,7 @@ WaterfallChart.WCRecordView = (function () {
 
 		addChildRecordBar: function (start, duration) {
 			var childRecordBar = document.createElement("div");
-			childRecordBar.className = "jsp_wc_recordBar jsp_wc_childRecordBar";
+			childRecordBar.className = "jspwc_recordBar jspwc_childRecordBar";
 			childRecordBar.style.left = start;
 			childRecordBar.style.width = duration;
 			this.selfRecordBarElm.parentNode.insertBefore(childRecordBar, this.selfRecordBarElm);
@@ -55,11 +55,11 @@ WaterfallChart.WCRecordView = (function () {
 			var recordNameElement;
 
 			recordNameElement = document.createElement("div");
-			recordNameElement.className = "jsp_wc_row";
+			recordNameElement.className = "jspwc_row";
 			recordNameElement.appendChild(document.createTextNode(recordName));
 
 			this.recordNameContainerElm = document.createElement("div");
-			this.recordNameContainerElm.className = "jsp_wc_recordNameContainer";
+			this.recordNameContainerElm.className = "jspwc_recordNameContainer";
 			this.recordNameContainerElm.appendChild(recordNameElement);
 		},
 
@@ -67,18 +67,18 @@ WaterfallChart.WCRecordView = (function () {
 			var containmentTools, recordBracket, recordBarsContainer;
 
 			this.recordElm = document.createElement("div");
-			this.recordElm.className = "jsp_wc_record";
+			this.recordElm.className = "jspwc_record";
 
 			if (hasChildren) {
 				containmentTools = document.createElement("div");
-				containmentTools.className = "jsp_wc_containmentTools";
+				containmentTools.className = "jspwc_containmentTools";
 
 				recordBracket = document.createElement("div");
-				recordBracket.className = "jsp_wc_recordBracket";
+				recordBracket.className = "jspwc_recordBracket";
 				containmentTools.appendChild(recordBracket);
 
 				this.foldHandleElm = document.createElement("div");
-				this.foldHandleElm.className = this.folded ? "jsp_wc_foldHandleFolded" : "jsp_wc_foldHandleUnfolded";
+				this.foldHandleElm.className = this.folded ? "jspwc_foldHandleFolded" : "jspwc_foldHandleUnfolded";
 				this.foldHandleElm.addEventListener("click", this, false);
 				containmentTools.appendChild(this.foldHandleElm);
 
@@ -88,24 +88,24 @@ WaterfallChart.WCRecordView = (function () {
 			}
 
 			recordBarsContainer = document.createElement("div");
-			recordBarsContainer.className = "jsp_wc_recordBarsContainer";
+			recordBarsContainer.className = "jspwc_recordBarsContainer";
 
 			if (isAsync) {
 				this.asyncRecordBarElm = document.createElement("div");
-				this.asyncRecordBarElm.className = "jsp_wc_recordBar jsp_wc_asyncRecordBar";
+				this.asyncRecordBarElm.className = "jspwc_recordBar jspwc_asyncRecordBar";
 				recordBarsContainer.appendChild(this.asyncRecordBarElm);
 			} else {
 				this.asyncRecordBarElm = null;
 			}
 
 			this.selfRecordBarElm = document.createElement("div");
-			this.selfRecordBarElm.className = "jsp_wc_recordBar jsp_wc_selfRecordBar";
+			this.selfRecordBarElm.className = "jspwc_recordBar jspwc_selfRecordBar";
 			recordBarsContainer.appendChild(this.selfRecordBarElm);
 
 			this.recordElm.appendChild(recordBarsContainer);
 
 			this.recordContainerElm = document.createElement("div");
-			this.recordContainerElm.className = "jsp_wc_recordContainer";
+			this.recordContainerElm.className = "jspwc_recordContainer";
 			this.recordContainerElm.appendChild(this.recordElm);
 		},
 
@@ -127,7 +127,7 @@ WaterfallChart.WCRecordView = (function () {
 
 		unfold: function unfold() {
 			this.folded = false;
-			this.foldHandleElm.className = "jsp_wc_foldHandleUnfolded";
+			this.foldHandleElm.className = "jspwc_foldHandleUnfolded";
 
 			if (this.delegate && typeof this.delegate.wcRecordViewUnfolded === "function") {
 				this.delegate.wcRecordViewUnfolded(this);
@@ -136,7 +136,7 @@ WaterfallChart.WCRecordView = (function () {
 
 		fold: function fold() {
 			this.folded = true;
-			this.foldHandleElm.className = "jsp_wc_foldHandleFolded";
+			this.foldHandleElm.className = "jspwc_foldHandleFolded";
 
 			if (this.delegate && typeof this.delegate.wcRecordViewFolded === "function") {
 				this.delegate.wcRecordViewFolded(this);

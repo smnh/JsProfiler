@@ -6,16 +6,16 @@ WaterfallChart.TimelineOverview = (function(){
 	 * @constructor
 	 */
 	function TimelineOverview(ancestorElement) {
-		this._element = ancestorElement.querySelector(".jsp_wc_timelineOverview");
+		this._element = ancestorElement.querySelector(".jspwc_timelineOverview");
 
 		this._elements = {};
-		this._elements.moveHandle = this._element.querySelector(".jsp_wc_timelineOverviewMoveHandle");
-		this._elements.leftShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewLeftShadowOverlay");
-		this._elements.rightShadowOverlay = this._element.querySelector(".jsp_wc_timelineOverviewRightShadowOverlay");
-		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
-		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jsp_wc_timelineOverviewHandle");
+		this._elements.moveHandle = this._element.querySelector(".jspwc_timelineOverviewMoveHandle");
+		this._elements.leftShadowOverlay = this._element.querySelector(".jspwc_timelineOverviewLeftShadowOverlay");
+		this._elements.rightShadowOverlay = this._element.querySelector(".jspwc_timelineOverviewRightShadowOverlay");
+		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jspwc_timelineOverviewHandle");
+		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jspwc_timelineOverviewHandle");
 
-		this.gridlinesContainer = this._element.querySelector(".jsp_wc_timelineOverviewGridlinesContainer");
+		this.gridlinesContainer = this._element.querySelector(".jspwc_timelineOverviewGridlinesContainer");
 		this.delegate = null;
 
 		this._leftHandlePosition = null;
