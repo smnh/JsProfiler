@@ -329,6 +329,7 @@ WaterfallChart.WCTableView = (function(){
 							this._elements.scrollView.style.height = (this._element.offsetParent.offsetHeight - margin * 2 - this._elements.header.offsetHeight) + "px";
 							this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 							this._updateGridlines();
+							this._elements.maximizeHandle.className = this._elements.maximizeHandle.className.replace("jspwc_maximizeHandle", "jspwc_minimizeHandle");
 						} else {
 							this._element.style.left = this._minimizedDimensionAndPosition.x + "px";
 							this._element.style.top = this._minimizedDimensionAndPosition.y + "px";
@@ -336,6 +337,7 @@ WaterfallChart.WCTableView = (function(){
 							this._elements.scrollView.style.height = this._minimizedDimensionAndPosition.height + "px";
 							this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 							this._updateGridlines();
+							this._elements.maximizeHandle.className = this._elements.maximizeHandle.className.replace("jspwc_minimizeHandle", "jspwc_maximizeHandle");
 						}
 						this._maximized = !this._maximized;
 					} else if (event.target === this._elements.closeHandle) {
