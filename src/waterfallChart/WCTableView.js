@@ -15,13 +15,14 @@ WaterfallChart.WCTableView = (function(){
 
 		this._element = ancestorElement.querySelector(".jspwc_table");
 		
-		headerElm = this._element.querySelector(".jspwc_header");
-		
 		this._elements = {};
+
+		this._elements.header = this._element.querySelector(".jspwc_header");
 		
-		this._elements.moveHandle = headerElm.querySelector(".jspwc_moveHandle");
-		this._elements.maximizeHandle = headerElm.querySelector(".jspwc_maximizeHandle");
-		this._elements.closeHandle = headerElm.querySelector(".jspwc_closeHandle");
+		this._elements.headerGridlinesContainer = this._elements.header.querySelector(".jspwc_headerGridlinesContainer");
+		this._elements.moveHandle = this._elements.header.querySelector(".jspwc_moveHandle");
+		this._elements.maximizeHandle = this._elements.header.querySelector(".jspwc_maximizeHandle");
+		this._elements.closeHandle = this._elements.header.querySelector(".jspwc_closeHandle");
 		
 		this._elements.bodyOverlays = this._element.querySelector(".jspwc_bodyOverlays");
 		this._elements.timeline = this._element.querySelector(".jspwc_timeline");
@@ -39,7 +40,7 @@ WaterfallChart.WCTableView = (function(){
 		this._elements.recordRowsBackground.innerHTML = "";
 		this._elements.records.innerHTML = "";
 		
-		this._timelineOverview = new WaterfallChart.TimelineOverview(headerElm);
+		this._timelineOverview = new WaterfallChart.TimelineOverview(this._elements.header);
 		this._timelineOverview.delegate = this;
 
 		this._timelineOverviewStart = 0;
@@ -84,8 +85,10 @@ WaterfallChart.WCTableView = (function(){
 			this._timelineOverview.setRightHandlePosition(this._timelineOverviewEnd);
 			
 			this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
-			
+
 			this._elements.timeline.style.right = scrollBarWidth + "px";
+			this._elements.timeline.style.right = scrollBarWidth + "px";
+			this._elements.headerGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 
 			this._elements.resizeHandle.style.width = (scrollBarWidth - 2) + "px";
@@ -216,8 +219,8 @@ WaterfallChart.WCTableView = (function(){
 
 					time = this._totalDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
-					this._timelineOverview.gridlinesContainer.childNodes[i].style.left = columnLeft;
-					this._timelineOverview.gridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
+					this._elements.headerGridlinesContainer.childNodes[i].style.left = columnLeft;
+					this._elements.headerGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
 				}
 
 				// Create new grid-line elements
@@ -237,7 +240,7 @@ WaterfallChart.WCTableView = (function(){
 
 					gridlineElm = gridlineElm.cloneNode(false);
 					gridlineElm.appendChild(gridlineLabelElm);
-					this._timelineOverview.gridlinesContainer.appendChild(gridlineElm);
+					this._elements.headerGridlinesContainer.appendChild(gridlineElm);
 
 					time = timelineStart + timelineDuration * i * columnRatio;
 					timeStr = (time === 0 ? "0" : utils.timeString(time));
@@ -253,7 +256,7 @@ WaterfallChart.WCTableView = (function(){
 				for (i = this._numberOfGridlines - 1; i >= numOfGridlines; i--) {
 					this._elements.recordGridlinesContainer.removeChild(this._elements.recordGridlinesContainer.lastChild);
 					this._elements.timelineGridlinesContainer.removeChild(this._elements.timelineGridlinesContainer.lastChild);
-					this._timelineOverview.gridlinesContainer.removeChild(this._timelineOverview.gridlinesContainer.lastChild);
+					this._elements.headerGridlinesContainer.removeChild(this._elements.headerGridlinesContainer.lastChild);
 				}
 
 				this._numberOfGridlines = numOfGridlines;
@@ -311,6 +314,7 @@ WaterfallChart.WCTableView = (function(){
 					}
 				},
 				click: function(event) {
+					var margin = 11;
 					if (event.target === this._elements.maximizeHandle) {
 						if (!this._maximized) {
 							this._minimizedDimensionAndPosition = {
@@ -321,8 +325,8 @@ WaterfallChart.WCTableView = (function(){
 							};
 							this._element.style.left = 10 + "px";
 							this._element.style.top = 10 + "px";
-							this._element.style.width = (this._element.offsetParent.offsetWidth - 22) + "px";
-							this._elements.scrollView.style.height = (this._element.offsetParent.offsetHeight - 42) + "px";
+							this._element.style.width = (this._element.offsetParent.offsetWidth - margin * 2) + "px";
+							this._elements.scrollView.style.height = (this._element.offsetParent.offsetHeight - margin * 2 - this._elements.header.offsetHeight) + "px";
 							this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 							this._updateGridlines();
 						} else {

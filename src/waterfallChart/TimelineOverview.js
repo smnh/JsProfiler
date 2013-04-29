@@ -15,7 +15,6 @@ WaterfallChart.TimelineOverview = (function(){
 		this._elements.leftHandle = this._elements.leftShadowOverlay.querySelector(".jspwc_timelineOverviewHandle");
 		this._elements.rightHandle = this._elements.rightShadowOverlay.querySelector(".jspwc_timelineOverviewHandle");
 
-		this.gridlinesContainer = this._element.querySelector(".jspwc_timelineOverviewGridlinesContainer");
 		this.delegate = null;
 
 		this._leftHandlePosition = null;
