@@ -10,6 +10,7 @@ var WaterfallChart = (function () {
 	 */
 	function WaterfallChart() {
 		this._recordsArray = null;
+		this._flatRecordsArray = null;
 		this._shown = false;
 		
 		this._totalDuration = 0;
@@ -71,15 +72,18 @@ var WaterfallChart = (function () {
 			var i, record, wcRecord;
 
 			this._recordsArray = [];
+			this._flatRecordsArray = [];
 			this._absoluteStart = rootRecord.start;
 			this._totalDuration = rootRecord.end - rootRecord.start;
 			
 			this._wcTableView.setTotalDuration(this._totalDuration);
-
+			
+			// Create hierarchy of WaterfallChart.WCRecordModel and push them to _recordsArray
 			for (i = 0; i < rootRecord.children.length; i++) {
 				record = rootRecord.children[i];
 				wcRecord = this._processRecord(record);
 				this._recordsArray.push(wcRecord);
+				this._flatRecordsArray.push(wcRecord);
 			}
 		},
 		
@@ -106,6 +110,8 @@ var WaterfallChart = (function () {
 						start: childWcRecord.start,
 						duration: childWcRecord.duration
 					});
+
+					this._flatRecordsArray.push(childWcRecord);
 				}
 
 				wcRecord.asyncTimes = wcRecord.asyncTimes.concat(childWcRecord.asyncTimes);
@@ -146,7 +152,7 @@ var WaterfallChart = (function () {
 		 * WaterfallChart.WCTableView delegate methods
 		 * -------------------------------------------
 		 */
-		wcTableViewDidClickClose: function(wcTableView) {
+		wcTableViewDidClickClose: function() {
 			this.hide();
 		},
 		
@@ -154,6 +160,23 @@ var WaterfallChart = (function () {
 		 * WaterfallChart.WCTableView dataSource methods
 		 * ---------------------------------------------
 		 */
+		numberOfRootRecords: function() {
+			return  this._flatRecordsArray.length;
+		},
+
+		cpuTimeOverviewRecordBarElementForIndex: function(index) {
+			var wcRecord, cpuTimeOverviewRecordBarElm, decimalPlaces = 5;
+			
+			wcRecord = this._flatRecordsArray[index];
+			
+			cpuTimeOverviewRecordBarElm = document.createElement("div");
+			cpuTimeOverviewRecordBarElm.className = "jspwc_recordBar jspwc_cpuTimeOverviewRecordBar";
+			cpuTimeOverviewRecordBarElm.style.left = utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces);
+			cpuTimeOverviewRecordBarElm.style.width = utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces);
+			
+			return cpuTimeOverviewRecordBarElm;
+		},
+		
 		numberOfChildWcRecordViews: function(wcRecordView) {
 			if (wcRecordView) {
 				return wcRecordView.wcRecord.children.length;

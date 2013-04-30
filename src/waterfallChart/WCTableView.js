@@ -8,7 +8,6 @@ WaterfallChart.WCTableView = (function(){
 	 * @constructor
 	 */
 	function WCTableView(ancestorElement) {
-		var headerElm;
 
 		this.dataSource = null;
 		this.delegate = null;
@@ -23,6 +22,7 @@ WaterfallChart.WCTableView = (function(){
 		this._elements.moveHandle = this._elements.header.querySelector(".jspwc_moveHandle");
 		this._elements.maximizeHandle = this._elements.header.querySelector(".jspwc_maximizeHandle");
 		this._elements.closeHandle = this._elements.header.querySelector(".jspwc_closeHandle");
+		this._elements.cpuTimeOverview = this._elements.header.querySelector(".jspwc_cpuTimeOverview");
 		
 		this._elements.bodyOverlays = this._element.querySelector(".jspwc_bodyOverlays");
 		this._elements.timeline = this._element.querySelector(".jspwc_timeline");
@@ -83,6 +83,8 @@ WaterfallChart.WCTableView = (function(){
 			this._timelineOverview.setMarginRight(scrollBarWidth + paddingRight);
 			this._timelineOverview.setLeftHandlePosition(this._timelineOverviewStart);
 			this._timelineOverview.setRightHandlePosition(this._timelineOverviewEnd);
+
+			this._elements.cpuTimeOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
 			
 			this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 
@@ -101,6 +103,7 @@ WaterfallChart.WCTableView = (function(){
 			
 			var numberOfRootRecords, wcRecordView, i;
 
+			this._elements.cpuTimeOverview.innerHTML = "";
 			this._elements.recordNamesBackground.innerHTML = "";
 			this._elements.recordNames.innerHTML = "";
 			this._elements.recordRowsBackground.innerHTML = "";
@@ -110,23 +113,27 @@ WaterfallChart.WCTableView = (function(){
 				return;
 			}
 			
-			if (typeof this.dataSource.numberOfChildWcRecordViews !== "function" || typeof this.dataSource.childWcRecordView !== "function") {
-				return;
+			if (typeof this.dataSource.numberOfChildWcRecordViews === "function" && typeof this.dataSource.childWcRecordView === "function") {
+				numberOfRootRecords = this.dataSource.numberOfChildWcRecordViews(null);
+				for (i = 0; i < numberOfRootRecords; i++) {
+					wcRecordView = this.dataSource.childWcRecordView(null, i);
+					wcRecordView.delegate = this;
+
+					this._elements.records.appendChild(wcRecordView.recordContainerElm);
+					this._elements.recordNames.appendChild(wcRecordView.recordNameContainerElm);
+
+					this._addBackgroundRow();
+
+					if (wcRecordView.folded === false) {
+						this._unfoldWCRecordView(wcRecordView);
+					}
+				}
 			}
-
-			numberOfRootRecords = this.dataSource.numberOfChildWcRecordViews(null);
 			
-			for (i = 0; i < numberOfRootRecords; i++) {
-				wcRecordView = this.dataSource.childWcRecordView(null, i);
-				wcRecordView.delegate = this;
-				
-				this._elements.records.appendChild(wcRecordView.recordContainerElm);
-				this._elements.recordNames.appendChild(wcRecordView.recordNameContainerElm);
-				
-				this._addBackgroundRow();
-
-				if (wcRecordView.folded === false) {
-					this._unfoldWCRecordView(wcRecordView);
+			if (typeof this.dataSource.numberOfRootRecords === "function") {
+				numberOfRootRecords = this.dataSource.numberOfRootRecords();
+				for (i = 0; i < numberOfRootRecords; i++) {
+					this._elements.cpuTimeOverview.appendChild(this.dataSource.cpuTimeOverviewRecordBarElementForIndex(i));
 				}
 			}
 		},
@@ -342,7 +349,7 @@ WaterfallChart.WCTableView = (function(){
 						this._maximized = !this._maximized;
 					} else if (event.target === this._elements.closeHandle) {
 						if (this.delegate && typeof this.delegate.wcTableViewDidClickClose === "function") {
-							this.delegate.wcTableViewDidClickClose(this);
+							this.delegate.wcTableViewDidClickClose();
 						}
 					}
 				}

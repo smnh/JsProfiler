@@ -113,7 +113,7 @@
     cursor: move;
 }
 
-.jspwc_timelineOverview {
+.jspwc_headerRow {
     position: relative;
     margin-left: 20px;
     height: 18px;
@@ -131,15 +131,21 @@
     height: 100%;
     width: 5px;
     background-color: #999999;
+    border: 1px solid #333333;
     border-radius: 2px;
     cursor: ew-resize;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
 }
 
 .jspwc_timelineOverviewGuide {
     position: absolute;
-    height: 200%;
+    top: 100%;
+    height: 100%;
     width: 1px;
-    background-color: #999999;
+    background-color: #666666;
+    z-index: 1;
 }
 
 .jspwc_timelineOverviewLeftShadowOverlay {
@@ -363,6 +369,10 @@
     -webkit-box-sizing: border-box;
        -moz-box-sizing: border-box;
             box-sizing: border-box;
+}
+
+.jspwc_recordBar.jspwc_cpuTimeOverviewRecordBar {
+    min-width: 1px;
 }
 
 .jspwc_recordBar.jspwc_selfRecordBar {
