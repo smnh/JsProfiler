@@ -8,7 +8,7 @@ WaterfallChart.WCRecordView = (function () {
 	function WCRecordView(wcRecord) {
 
 		var hasChildren = wcRecord.children.length > 0,
-			isAsync = wcRecord.asyncDuration > wcRecord.duration;
+			isAsync = wcRecord.asyncChildrenTimes.length > 0;
 
 		this.wcRecord = wcRecord;
 		this.folded = wcRecord.folded;
