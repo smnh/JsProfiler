@@ -11,6 +11,7 @@ var WaterfallChart = (function () {
 	function WaterfallChart() {
 		this._recordsArray = null;
 		this._flatRecordsArray = null;
+		this._asyncParentRecordsMap = null;
 		this._shown = false;
 		
 		this._totalDuration = 0;
@@ -73,17 +74,28 @@ var WaterfallChart = (function () {
 
 			this._recordsArray = [];
 			this._flatRecordsArray = [];
+			this._asyncParentRecordsMap = {};
 			this._absoluteStart = rootRecord.start;
 			this._totalDuration = rootRecord.end - rootRecord.start;
 			
 			this._wcTableView.setTotalDuration(this._totalDuration);
 			
-			// Create hierarchy of WaterfallChart.WCRecordModel and push them to _recordsArray
-			for (i = 0; i < rootRecord.children.length; i++) {
+			// Create two arrays - _flatRecordsArray which has the same structure as the original record data but with
+			// WaterfallChart.WCRecordModel instead of JsProfiler.Record, and _recordsArray which has all the
+			// asynchronous records as child of their asynchronous parents.
+			for (i = rootRecord.children.length - 1; i >= 0; i--) {
 				record = rootRecord.children[i];
 				wcRecord = this._processRecord(record);
-				this._recordsArray.push(wcRecord);
-				this._flatRecordsArray.push(wcRecord);
+				// Asynchronous records could only be level 0 records.
+				if (!wcRecord.async) {
+					this._recordsArray.unshift(wcRecord);
+				} else {
+					if (typeof this._asyncParentRecordsMap[wcRecord.asyncParentId] === "undefined") {
+						this._asyncParentRecordsMap[wcRecord.asyncParentId] = [];
+					}
+					this._asyncParentRecordsMap[wcRecord.asyncParentId].unshift(wcRecord)
+				}
+				this._flatRecordsArray.unshift(wcRecord);
 			}
 		},
 		
@@ -96,26 +108,30 @@ var WaterfallChart = (function () {
 			var i, wcRecord, childWcRecord;
 
 			wcRecord = new WaterfallChart.WCRecordModel(record, this._absoluteStart);
-
+			
+			// Process and push all the synchronous child records
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
 				wcRecord.children.push(childWcRecord);
-
-				if (!childWcRecord.async) {
-					// Synchronous child
-					wcRecord.self -= childWcRecord.duration;
-				} else {
-					// Asynchronous child
-					wcRecord.asyncTimes.push({
+				wcRecord.self -= childWcRecord.duration;
+			}
+			
+			// Push all the asynchronous child records
+			if (typeof this._asyncParentRecordsMap[wcRecord.id] !== "undefined") {
+				for (i = 0; i < this._asyncParentRecordsMap[wcRecord.id].length; i++) {
+					childWcRecord = this._asyncParentRecordsMap[wcRecord.id][i];
+					wcRecord.children.push(childWcRecord);
+					wcRecord.asyncChildrenTimes.push({
 						start: childWcRecord.start,
 						duration: childWcRecord.duration
 					});
-
-					this._flatRecordsArray.push(childWcRecord);
 				}
-
-				wcRecord.asyncTimes = wcRecord.asyncTimes.concat(childWcRecord.asyncTimes);
-
+			}
+			
+			// Process over all children (synchronous and asynchronous) and update asynchronous times.
+			for (i = 0; i < wcRecord.children.length; i++) {
+				childWcRecord = wcRecord.children[i];
+				wcRecord.asyncChildrenTimes = wcRecord.asyncChildrenTimes.concat(childWcRecord.asyncChildrenTimes);
 				if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
 					wcRecord.asyncEnd = childWcRecord.asyncEnd;
 					wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
@@ -202,8 +218,8 @@ var WaterfallChart = (function () {
 				utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces),
 				utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces)
 			);
-			for (i = 0; i < wcRecord.asyncTimes.length; i++) {
-				asyncTime = wcRecord.asyncTimes[i];
+			for (i = 0; i < wcRecord.asyncChildrenTimes.length; i++) {
+				asyncTime = wcRecord.asyncChildrenTimes[i];
 				wcRecordView.addChildRecordBar(
 					utils.percentWithDecimalPlaces(asyncTime.start / this._totalDuration, decimalPlaces),
 					utils.percentWithDecimalPlaces(asyncTime.duration / this._totalDuration, decimalPlaces)

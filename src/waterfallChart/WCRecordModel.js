@@ -7,6 +7,9 @@ WaterfallChart.WCRecordModel = (function(){
 	 * @constructor
 	 */
 	function WCRecordModel(record, absoluteStart) {
+		this.id = record.id;
+		this.parentId = record.parentId;
+		this.asyncParentId = record.asyncParentId;
 		this.name = record.name;
 		this.async = record.async;
 		this.start = record.start - absoluteStart;
@@ -15,7 +18,7 @@ WaterfallChart.WCRecordModel = (function(){
 		this.self = this.duration;
 		this.asyncEnd = this.end;
 		this.asyncDuration = this.duration;
-		this.asyncTimes = [];
+		this.asyncChildrenTimes = [];
 		this.children = [];
 		this.folded = true;
 	}

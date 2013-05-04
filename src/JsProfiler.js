@@ -8,34 +8,41 @@ var JsProfiler = (function() {
 		this._profiling = false;
 		this.reset();
 	}
+
+	JsProfiler.recordId = 0;
 	
-    /**
-     * Represents a profile Record.
+	/**
+	 * Represents a profile Record.
 	 *
 	 * Record can have synchronous and asynchronous children.
 	 * The time range of all the synchronous child records must be within the time range of their parent record.
 	 * The time range of all asynchronous child records must be outside and after the time range of their parent record.
 	 * Additionally, asynchronous children are always located at the top of the records stack.
 	 * 
-     * @param {String}     name      The name of the record
-     * @param {Boolean}    async     A boolean flag indicating if the record is an asynchronous relative to its parent.
+	 * @param {String}     name      The name of the record
 	 * 
-	 * @property {String}  name      Same as the name parameter.
-	 * @property {Boolean} async     Same as the async parameter.
-	 * @property {Number}  start     The start date of the record.
-	 * @property {Number}  end       The end data of the record.
-	 * @property {Array}   children  Child records of the records.
+	 * @property {String}  id            The id of the record.
+	 * @property {String}  parentId      The id of the parent record.
+	 * @property {String}  asyncParentId The id of the asynchronous parent record.
+	 * @property {String}  name          Same as the name parameter.
+	 * @property {Boolean} async         A boolean flag indicating if the record is an asynchronous relative to its parent.
+	 * @property {Number}  start         The start date of the record.
+	 * @property {Number}  end           The end data of the record.
+	 * @property {Array}   children      Synchronous child records.
 	 * 
-     * @constructor
-     */
-    JsProfiler.Record = function Record(name, async) {
-        this.name = name;
-        this.async = async;
-        this.start = Date.now();
-        this.end = null;
-        this.children = [];
-    };
-    
+	 * @constructor
+	 */
+	JsProfiler.Record = function Record(name) {
+		this.id = String(JsProfiler.recordId++);
+		this.parentId = null;
+		this.asyncParentId = null;
+		this.name = name;
+		this.async = false;
+		this.start = Date.now();
+		this.end = null;
+		this.children = [];
+	};
+	
 	JsProfiler.prototype = {
 		constructor: JsProfiler,
 		
@@ -55,7 +62,8 @@ var JsProfiler = (function() {
 		},
 		
 		/**
-		 * Starts profiling
+		 * Starts profiling.
+		 * Removes all previously collected data.
 		 */
 		start: function() {
 			
@@ -64,11 +72,15 @@ var JsProfiler = (function() {
 			}
 			
 			this._profiling = true;
-			this._leafRecord = new JsProfiler.Record("root", false);
+			
+			// Do not create new leaf record in case profiler started again after ending.
+			if (this._leafRecord === null) {
+				this._leafRecord = new JsProfiler.Record("root");
+			}
 		},
 		
 		/**
-		 * Stops profiling
+		 * Stops profiling.
 		 */
 		stop: function() {
 			
@@ -87,33 +99,42 @@ var JsProfiler = (function() {
 		/**
 		 * Create and begin profiling single record.
 		 * 
-		 * @param {String} recordLabel A label that describes the record.
-		 * @param {JsProfiler.Record} [asyncContextRecord] Parent record which asynchronously led to the creation of this record.
-		 *                            If this parameter is specified then this record must be the first record in a record stack
-		 *                            and all previous records must be ended.
+		 * @param {String} recordLabel  A label that describes the record.
+		 * @param {JsProfiler.Record}   [asyncContextRecord] Parent record which asynchronously led to the creation of this record.
+		 *                              If this parameter is specified then all previously synchronous records must have been ended,
+		 *                              in other words, _recordStack must be empty.
+		 * @throws  {Error}             Throws an error when trying to begin record in asynchronous context while
+		 *                              previously started records were not ended.
 		 * @returns {JsProfiler.Record} The created record object. Can be used to create asynchronous child records.
 		 */
 		begin: function(recordLabel, asyncContextRecord) {
 
-			var hasAsyncContext, record, parentRecord;
+			var hasAsyncContext, record;
 			
 			if (!this._profiling) {
 				return null;
 			}
 			
+			// If asyncContextRecord wasn't specified, record stack is empty and asynchronous context was set, then use
+			// last set asynchronous context.
 			if (typeof asyncContextRecord === "undefined" && this._recordsStack.length === 0 && this._asyncContextRecordsStack.length > 0) {
 				asyncContextRecord = this._asyncContextRecordsStack[this._asyncContextRecordsStack.length - 1];
 			}
 			
 			hasAsyncContext = (typeof asyncContextRecord !== "undefined");
 			
+			// It is a programmer error to use asyncContextRecord while record stack is not empty. Throw an exception.
 			if (hasAsyncContext && this._recordsStack.length !== 0) {
 				throw new Error("Can't begin record '" + recordLabel + "' in asynchronous record context '" + asyncContextRecord.name + "' while record stack is not empty.");
 			}
 			
-			record = new JsProfiler.Record(recordLabel, hasAsyncContext);
-			parentRecord = (hasAsyncContext ? asyncContextRecord : this._leafRecord);
-			parentRecord.children.push(record);
+			record = new JsProfiler.Record(recordLabel);
+			record.parentId = this._leafRecord.id;
+			if (hasAsyncContext) {
+				record.asyncParentId = asyncContextRecord.id;
+				record.async = true;
+			}
+			this._leafRecord.children.push(record);
 			this._recordsStack.push(this._leafRecord);
 			this._leafRecord = record;
 			
@@ -141,8 +162,13 @@ var JsProfiler = (function() {
 		removeAsyncContext: function() {
 			this._asyncContextRecordsStack.pop();
 		},
-		
-		wait: function(recordLabel) {
+
+		/**
+		 * Pauses a record making it asynchronous one.
+		 * 
+		 * @param recordLabel
+		 */
+		pause: function(recordLabel) {
 			// TODO
 		},
 		
