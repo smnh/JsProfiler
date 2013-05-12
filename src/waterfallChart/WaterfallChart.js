@@ -140,6 +140,20 @@ var WaterfallChart = (function () {
 
 			return wcRecord;
 		},
+
+		_wcRecordForIndexPath: function(indexPath) {
+			var i, index,
+				children = this._recordsArray,
+				wcRecord = null;
+			
+			for (i = 0; i < indexPath.length; i++) {
+				index = indexPath[i];
+				wcRecord = children[index];
+				children = wcRecord.children;
+			}
+			
+			return wcRecord;
+		},
 		
 		/**
 		 * Shows the waterfall chart.
@@ -172,12 +186,22 @@ var WaterfallChart = (function () {
 			this.hide();
 		},
 		
+		wcTableViewDidFoldedWcRecordViewAtIndexPath: function(indexPath) {
+			var wcRecord = this._wcRecordForIndexPath(indexPath);
+			wcRecord.folded = true;
+		},
+
+		wcTableViewDidUnfoldedWcRecordViewAtIndexPath: function(indexPath) {
+			var wcRecord = this._wcRecordForIndexPath(indexPath);
+			wcRecord.folded = false;
+		},
+		
 		/* 
 		 * WaterfallChart.WCTableView dataSource methods
 		 * ---------------------------------------------
 		 */
 		numberOfRootRecords: function() {
-			return  this._flatRecordsArray.length;
+			return this._flatRecordsArray.length;
 		},
 
 		cpuTimeOverviewRecordBarElementForIndex: function(index) {
@@ -193,24 +217,27 @@ var WaterfallChart = (function () {
 			return cpuTimeOverviewRecordBarElm;
 		},
 		
-		numberOfChildWcRecordViews: function(wcRecordView) {
-			if (wcRecordView) {
-				return wcRecordView.wcRecord.children.length;
-			} else {
+		numberOfChildWcRecordViewsForIndexPath: function(indexPath) {
+			var wcRecord;
+			
+			if (indexPath === null) {
 				return this._recordsArray.length;
+			} else {
+				wcRecord = this._wcRecordForIndexPath(indexPath);
+				return wcRecord.children.length;
 			}
 		},
 		
-		childWcRecordView: function(wcRecordView, childIndex) {
-			var i, asyncTime, decimalPlaces = 5, wcRecord;
+		wcRecordViewForIndexPath: function(indexPath) {
+			var wcRecord, wcRecordView, i, asyncTime, decimalPlaces = 5;
 			
-			if (wcRecordView) {
-				wcRecord = wcRecordView.wcRecord.children[childIndex];
-			} else {
-				wcRecord = this._recordsArray[childIndex];
-			}
-			
-			wcRecordView = new WaterfallChart.WCRecordView(wcRecord);
+			wcRecord = this._wcRecordForIndexPath(indexPath);
+			wcRecordView = new WaterfallChart.WCRecordView({
+				hasChildren: wcRecord.children.length > 0,
+				isAsync: wcRecord.asyncChildrenTimes.length > 0,
+				folded: wcRecord.folded,
+				name: wcRecord.name
+			});
 
 			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces));
 			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, decimalPlaces));

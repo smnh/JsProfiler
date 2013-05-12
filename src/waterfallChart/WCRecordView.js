@@ -2,21 +2,18 @@ WaterfallChart.WCRecordView = (function () {
 
 	/**
 	 * @name WaterfallChart.WCRecordView
-	 * @param {WaterfallChart.WCRecordModel} wcRecord
+	 * @param {Object} data
 	 * @constructor
 	 */
-	function WCRecordView(wcRecord) {
+	function WCRecordView(data) {
 
-		var hasChildren = wcRecord.children.length > 0,
-			isAsync = wcRecord.asyncChildrenTimes.length > 0;
-
-		this.wcRecord = wcRecord;
-		this.folded = wcRecord.folded;
+		this.folded = data.folded;
+		this.indexPath = null;
 		this.childWcRecordViews = [];
 		this.delegate = null;
-
-		this._generateRecordNameElement(wcRecord.name);
-		this._generateRecordElement(hasChildren, isAsync);
+		
+		this._generateRecordNameElement(data.name);
+		this._generateRecordElement(data.hasChildren, data.isAsync);
 	}
 
 	WCRecordView.prototype = {
@@ -125,35 +122,35 @@ WaterfallChart.WCRecordView = (function () {
 			}
 		},
 
-		unfold: function unfold() {
+		unfold: function() {
 			this.folded = false;
 			this.foldHandleElm.className = "jspwc_foldHandleUnfolded";
-
-			if (this.delegate && typeof this.delegate.wcRecordViewUnfolded === "function") {
-				this.delegate.wcRecordViewUnfolded(this);
-			}
 		},
 
-		fold: function fold() {
+		fold: function() {
 			this.folded = true;
 			this.foldHandleElm.className = "jspwc_foldHandleFolded";
-
-			if (this.delegate && typeof this.delegate.wcRecordViewFolded === "function") {
-				this.delegate.wcRecordViewFolded(this);
-			}
 		},
 
-		toggle: function toggle() {
+		_toggle: function() {
+			// Invoke the delegate methods outside of the fold and unfold methods to prevent invoking delegate methods
+			// when fold() and unfold() are called from outside.
 			if (!this.folded) {
 				this.fold();
+				if (this.delegate && typeof this.delegate.wcRecordViewFolded === "function") {
+					this.delegate.wcRecordViewFolded(this);
+				}
 			} else {
 				this.unfold();
+				if (this.delegate && typeof this.delegate.wcRecordViewUnfolded === "function") {
+					this.delegate.wcRecordViewUnfolded(this);
+				}
 			}
 		},
 
 		handleEvent: function (event) {
 			if (event.target === this.foldHandleElm) {
-				this.toggle();
+				this._toggle();
 			}
 		}
 	};
