@@ -109,47 +109,43 @@ var WaterfallChart = (function () {
 
 			wcRecord = new WaterfallChart.WCRecordModel(record, this._absoluteStart);
 			
-			// Process and push all the synchronous child records
+			// Recursively process and add all the synchronous child records.
 			for (i = 0; i < record.children.length; i++) {
 				childWcRecord = this._processRecord(record.children[i]);
-				wcRecord.children.push(childWcRecord);
-				wcRecord.self -= childWcRecord.duration;
+				wcRecord.addRecord(childWcRecord);
 			}
 			
-			// Push all the asynchronous child records
+			// Add all the asynchronous child records.
 			if (typeof this._asyncParentRecordsMap[wcRecord.id] !== "undefined") {
 				for (i = 0; i < this._asyncParentRecordsMap[wcRecord.id].length; i++) {
 					childWcRecord = this._asyncParentRecordsMap[wcRecord.id][i];
-					wcRecord.children.push(childWcRecord);
-					wcRecord.asyncChildrenTimes.push({
-						start: childWcRecord.start,
-						duration: childWcRecord.duration
-					});
+					wcRecord.addRecord(childWcRecord);
 				}
 			}
 			
-			// Process over all children (synchronous and asynchronous) and update asynchronous times.
-			for (i = 0; i < wcRecord.children.length; i++) {
-				childWcRecord = wcRecord.children[i];
-				wcRecord.asyncChildrenTimes = wcRecord.asyncChildrenTimes.concat(childWcRecord.asyncChildrenTimes);
-				if (childWcRecord.asyncEnd > wcRecord.asyncEnd) {
-					wcRecord.asyncEnd = childWcRecord.asyncEnd;
-					wcRecord.asyncDuration = wcRecord.asyncEnd - wcRecord.start;
-				}
-			}
-
 			return wcRecord;
 		},
 
-		_wcRecordForIndexPath: function(indexPath) {
+		/**
+		 * Returns WCRecordModel located at indexPath in synchronous or asynchronous context.
+		 * 
+		 * @param {Array} indexPath
+		 * @param {Boolean} async
+		 * @returns {WaterfallChart.WCRecordModel}
+		 * @private
+		 */
+		_wcRecordForIndexPath: function(indexPath, async) {
 			var i, index,
-				children = this._recordsArray,
+				children = async ? this._recordsArray : this._flatRecordsArray,
 				wcRecord = null;
 			
 			for (i = 0; i < indexPath.length; i++) {
 				index = indexPath[i];
+				if (index >= children.length) {
+					throw new Error("indexPath is out of range for " + (async ? "asynchronous" : "synchronous") + " records: ", indexPath);
+				}
 				wcRecord = children[index];
-				children = wcRecord.children;
+				children = async ? wcRecord.allChildren : wcRecord.children;
 			}
 			
 			return wcRecord;
@@ -186,13 +182,13 @@ var WaterfallChart = (function () {
 			this.hide();
 		},
 		
-		wcTableViewDidFoldedWcRecordViewAtIndexPath: function(indexPath) {
-			var wcRecord = this._wcRecordForIndexPath(indexPath);
+		wcTableViewDidFoldedWcRecordViewAtIndexPath: function(indexPath, async) {
+			var wcRecord = this._wcRecordForIndexPath(indexPath, async);
 			wcRecord.folded = true;
 		},
 
-		wcTableViewDidUnfoldedWcRecordViewAtIndexPath: function(indexPath) {
-			var wcRecord = this._wcRecordForIndexPath(indexPath);
+		wcTableViewDidUnfoldedWcRecordViewAtIndexPath: function(indexPath, async) {
+			var wcRecord = this._wcRecordForIndexPath(indexPath, async);
 			wcRecord.folded = false;
 		},
 		
@@ -200,10 +196,6 @@ var WaterfallChart = (function () {
 		 * WaterfallChart.WCTableView dataSource methods
 		 * ---------------------------------------------
 		 */
-		numberOfRootRecords: function() {
-			return this._flatRecordsArray.length;
-		},
-
 		cpuTimeOverviewRecordBarElementForIndex: function(index) {
 			var wcRecord, cpuTimeOverviewRecordBarElm, decimalPlaces = 5;
 			
@@ -217,24 +209,24 @@ var WaterfallChart = (function () {
 			return cpuTimeOverviewRecordBarElm;
 		},
 		
-		numberOfChildWcRecordViewsForIndexPath: function(indexPath) {
+		numberOfChildWcRecordViewsForIndexPath: function(indexPath, async) {
 			var wcRecord;
 			
 			if (indexPath === null) {
-				return this._recordsArray.length;
+				return async ? this._recordsArray.length : this._flatRecordsArray.length;
 			} else {
-				wcRecord = this._wcRecordForIndexPath(indexPath);
-				return wcRecord.children.length;
+				wcRecord = this._wcRecordForIndexPath(indexPath, async);
+				return async ? wcRecord.allChildren.length : wcRecord.children.length;
 			}
 		},
 		
-		wcRecordViewForIndexPath: function(indexPath) {
+		wcRecordViewForIndexPath: function(indexPath, async) {
 			var wcRecord, wcRecordView, i, asyncTime, decimalPlaces = 5;
 			
-			wcRecord = this._wcRecordForIndexPath(indexPath);
+			wcRecord = this._wcRecordForIndexPath(indexPath, async);
 			wcRecordView = new WaterfallChart.WCRecordView({
-				hasChildren: wcRecord.children.length > 0,
-				isAsync: wcRecord.asyncChildrenTimes.length > 0,
+				hasChildren: wcRecord.allChildren.length > 0,
+				hasAsyncDescendants: wcRecord.asyncChildrenTimes.length > 0,
 				folded: wcRecord.folded,
 				name: wcRecord.name
 			});

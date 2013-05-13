@@ -13,7 +13,7 @@ WaterfallChart.WCRecordView = (function () {
 		this.delegate = null;
 		
 		this._generateRecordNameElement(data.name);
-		this._generateRecordElement(data.hasChildren, data.isAsync);
+		this._generateRecordElement(data.hasChildren, data.hasAsyncDescendants);
 	}
 
 	WCRecordView.prototype = {
@@ -60,7 +60,7 @@ WaterfallChart.WCRecordView = (function () {
 			this.recordNameContainerElm.appendChild(recordNameElement);
 		},
 
-		_generateRecordElement: function (hasChildren, isAsync) {
+		_generateRecordElement: function (hasChildren, hasAsyncDescendants) {
 			var containmentTools, recordBracket, recordBarsContainer;
 
 			this.recordElm = document.createElement("div");
@@ -87,7 +87,7 @@ WaterfallChart.WCRecordView = (function () {
 			recordBarsContainer = document.createElement("div");
 			recordBarsContainer.className = "jspwc_recordBarsContainer";
 
-			if (isAsync) {
+			if (hasAsyncDescendants) {
 				this.asyncRecordBarElm = document.createElement("div");
 				this.asyncRecordBarElm.className = "jspwc_recordBar jspwc_asyncRecordBar";
 				recordBarsContainer.appendChild(this.asyncRecordBarElm);
