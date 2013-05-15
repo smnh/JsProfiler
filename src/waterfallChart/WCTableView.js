@@ -179,6 +179,8 @@ WaterfallChart.WCTableView = (function(){
 					this._foldWCRecordView(wcRecordView.childWcRecordViews[i]);
 				}
 			}
+
+			wcRecordView.removeAllChildWcRecordView();
 		},
 
 		_removeBackgroundRow: function () {
@@ -430,7 +432,6 @@ WaterfallChart.WCTableView = (function(){
 		 */
 		wcRecordViewFolded: function (wcRecordView) {
 			this._foldWCRecordView(wcRecordView);
-			wcRecordView.removeAllChildWcRecordView();
 			if (this.delegate && typeof this.delegate.wcTableViewDidFoldedWcRecordViewAtIndexPath === "function") {
 				this.delegate.wcTableViewDidFoldedWcRecordViewAtIndexPath(wcRecordView.indexPath, true);
 			}

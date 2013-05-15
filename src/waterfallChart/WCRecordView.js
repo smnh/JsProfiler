@@ -9,6 +9,7 @@ WaterfallChart.WCRecordView = (function () {
 
 		this.folded = data.folded;
 		this.indexPath = null;
+		this.parentWcRecordView = null;
 		this.childWcRecordViews = [];
 		this.delegate = null;
 		
@@ -107,6 +108,7 @@ WaterfallChart.WCRecordView = (function () {
 		},
 
 		addChildWcRecordView: function (childWcRecordView) {
+			childWcRecordView.parentWcRecordView = this;
 			this.childWcRecordViews.push(childWcRecordView);
 			this.recordContainerElm.appendChild(childWcRecordView.recordContainerElm);
 			this.recordNameContainerElm.appendChild(childWcRecordView.recordNameContainerElm);
@@ -117,6 +119,7 @@ WaterfallChart.WCRecordView = (function () {
 
 			while (this.childWcRecordViews.length) {
 				childWcRecordView = this.childWcRecordViews.pop();
+				childWcRecordView.parentWcRecordView = null;
 				childWcRecordView.recordContainerElm.parentNode.removeChild(childWcRecordView.recordContainerElm);
 				childWcRecordView.recordNameContainerElm.parentNode.removeChild(childWcRecordView.recordNameContainerElm);
 			}
