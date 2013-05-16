@@ -46,7 +46,11 @@ WaterfallChart.WCTableView = (function(){
 		this._timelineOverviewStart = 0;
 		this._timelineOverviewEnd = 100;
 		this._timelineOverviewWidth = null;
-
+		
+		this._lastTimelineOverviewStart = this._timelineOverviewStart;
+		this._lastTimelineOverviewEnd = this._timelineOverviewEnd;
+		
+		this._wcRecordViews = [];
 		this._numberOfGridlines = 0;
 		this._totalDuration = 0;
 		this._maximized = false;
@@ -109,6 +113,8 @@ WaterfallChart.WCTableView = (function(){
 			this._elements.recordRowsBackground.innerHTML = "";
 			this._elements.records.innerHTML = "";
 
+			this._wcRecordViews = [];
+			
 			if (!this.dataSource) {
 				return;
 			}
@@ -120,7 +126,8 @@ WaterfallChart.WCTableView = (function(){
 					wcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, true);
 					wcRecordView.indexPath = indexPath;
 					wcRecordView.delegate = this;
-
+					
+					this._wcRecordViews.push(wcRecordView);
 					this._elements.records.appendChild(wcRecordView.recordContainerElm);
 					this._elements.recordNames.appendChild(wcRecordView.recordNameContainerElm);
 
@@ -141,19 +148,25 @@ WaterfallChart.WCTableView = (function(){
 		},
 
 		_unfoldWCRecordView: function (wcRecordView) {
-			var numberOfRootRecords, childWcRecordView, i, indexPath;
+			var numberOfChildWcRecordViews, childWcRecordView, i, indexPath;
 
-			numberOfRootRecords = this.dataSource.numberOfChildWcRecordViewsForIndexPath(wcRecordView.indexPath, true);
+			numberOfChildWcRecordViews = this.dataSource.numberOfChildWcRecordViewsForIndexPath(wcRecordView.indexPath, true);
 
-			for (i = 0; i < numberOfRootRecords; i++) {
+			for (i = 0; i < numberOfChildWcRecordViews; i++) {
 				indexPath = wcRecordView.indexPath.concat(i);
 				childWcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, true);
 				childWcRecordView.indexPath = indexPath;
 				childWcRecordView.delegate = this;
 
 				wcRecordView.addChildWcRecordView(childWcRecordView);
-
-				this._addBackgroundRow();
+				
+				// While unfolding wcRecordView and creating child wcRecordViews make sure they are within the chart's
+				// viewable area. If they are add a background row, otherwise hide them.
+				if (this._isWcRecordViewVisible(childWcRecordView)) {
+					this._addBackgroundRow();
+				} else {
+					childWcRecordView.hide();
+				}
 
 				if (childWcRecordView.folded === false) {
 					this._unfoldWCRecordView(childWcRecordView);
@@ -169,14 +182,17 @@ WaterfallChart.WCTableView = (function(){
 		},
 
 		_foldWCRecordView: function (wcRecordView) {
-			var numberOfRootRecords, i;
+			var numberOfChildWcRecordViews, i, childWcRecordView;
 
-			numberOfRootRecords = wcRecordView.childWcRecordViews.length;
-
-			for (i = 0; i < numberOfRootRecords; i++) {
-				this._removeBackgroundRow();
+			numberOfChildWcRecordViews = wcRecordView.childWcRecordViews.length;
+			
+			for (i = 0; i < numberOfChildWcRecordViews; i++) {
+				childWcRecordView = wcRecordView.childWcRecordViews[i];
+				if (this._isWcRecordViewVisible(childWcRecordView)) {
+					this._removeBackgroundRow();
+				}
 				if (wcRecordView.childWcRecordViews[i].folded === false) {
-					this._foldWCRecordView(wcRecordView.childWcRecordViews[i]);
+					this._foldWCRecordView(childWcRecordView);
 				}
 			}
 
@@ -187,7 +203,11 @@ WaterfallChart.WCTableView = (function(){
 			this._elements.recordNamesBackground.removeChild(this._elements.recordNamesBackground.lastChild);
 			this._elements.recordRowsBackground.removeChild(this._elements.recordRowsBackground.lastChild);
 		},
-
+		
+		_isWcRecordViewVisible: function(wcRecordView) {
+			return wcRecordView.start <= this._timelineOverviewEnd && wcRecordView.start + wcRecordView.asyncDuration >= this._timelineOverviewStart;
+		},
+		
 		_attachEvents: function () {
 			this._elements.resizeHandle.addEventListener("mousedown", this, false);
 			this._elements.moveHandle.addEventListener("mousedown", this, false);
@@ -297,8 +317,91 @@ WaterfallChart.WCTableView = (function(){
 		_updateRecords: function () {
 			this._elements.records.style.width = this._timelineOverviewWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
 			this._elements.records.style.left = -this._timelineOverviewStart * this._timelineOverviewWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			
+			// Remove record rows outside of the chart view
+			
+			if (this._timelineOverviewStart > this._lastTimelineOverviewStart) {
+				this._hideRecordsFromLeft(this._wcRecordViews);
+			} else if (this._timelineOverviewStart < this._lastTimelineOverviewStart) {
+				this._revealRecordsFromLeft(this._wcRecordViews);
+			}
+			
+			if (this._timelineOverviewEnd < this._lastTimelineOverviewEnd) {
+				this._hideRecordsFromRight(this._wcRecordViews);
+			} else if (this._timelineOverviewEnd > this._lastTimelineOverviewEnd) {
+				this._revealRecordsFromRight(this._wcRecordViews);
+			}
+			
+			this._lastTimelineOverviewStart = this._timelineOverviewStart;
+			this._lastTimelineOverviewEnd = this._timelineOverviewEnd;
+		},
+		
+		_forEachWcRecordView: function(wcRecordViews, callback) {
+			var i, wcRecordView, startTime, endTime;
+			for (i = 0; i < wcRecordViews.length; i++) {
+				wcRecordView = wcRecordViews[i];
+				startTime = wcRecordView.start;
+				endTime = startTime + wcRecordView.asyncDuration;
+				callback.call(this, wcRecordView, startTime, endTime);
+			}
+		},
+		
+		_hideRecordsFromLeft: function(wcRecordViews) {
+			this._forEachWcRecordView(wcRecordViews, function (wcRecordView, startTime, endTime) {
+				// Check if wcRecordView children should be hidden only if chart's left edge has moved inside the wcRecordView.
+				if (wcRecordView.childWcRecordViews.length > 0 && this._lastTimelineOverviewStart <= endTime && this._timelineOverviewStart > startTime) {
+					this._hideRecordsFromLeft(wcRecordView.childWcRecordViews);
+				}
+				// Hide wcRecordView if chart's left edge has passed over wcRecordView's right edge. 
+				if (this._lastTimelineOverviewStart <= endTime && this._timelineOverviewStart > endTime) {
+					wcRecordView.hide();
+					this._removeBackgroundRow();
+				}
+			});
+		},
+		
+		_revealRecordsFromLeft: function (wcRecordViews) {
+			this._forEachWcRecordView(wcRecordViews, function (wcRecordView, startTime, endTime) {
+				// Check if wcRecordView children should be shown only if chart's left edge has moved inside the wcRecordView.
+				if (wcRecordView.childWcRecordViews.length > 0 && this._lastTimelineOverviewStart > startTime && this._timelineOverviewStart <= endTime) {
+					this._revealRecordsFromLeft(wcRecordView.childWcRecordViews);
+				}
+				// Show wcRecordView if chart's left edge has passed over wcRecordView's right edge. 
+				if (this._lastTimelineOverviewStart > endTime && this._timelineOverviewStart <= endTime) {
+					wcRecordView.show();
+					this._addBackgroundRow();
+				}
+			});
+		},
+		
+		_hideRecordsFromRight: function(wcRecordViews) {
+			this._forEachWcRecordView(wcRecordViews, function (wcRecordView, startTime, endTime) {
+				// Check if wcRecordView children should be hidden only if chart's right edge has moved inside the wcRecordView.
+				if (wcRecordView.childWcRecordViews.length > 0 && this._lastTimelineOverviewEnd >= startTime && this._timelineOverviewEnd < endTime) {
+					this._hideRecordsFromRight(wcRecordView.childWcRecordViews);
+				}
+				// Hide wcRecordView if chart's right edge has passed over wcRecordView's left edge. 
+				if (this._lastTimelineOverviewEnd >= startTime && this._timelineOverviewEnd < startTime) {
+					wcRecordView.hide();
+					this._removeBackgroundRow();
+				}
+			});
 		},
 
+		_revealRecordsFromRight: function(wcRecordViews) {
+			this._forEachWcRecordView(wcRecordViews, function (wcRecordView, startTime, endTime) {
+				// Check if wcRecordView children should be shown only if chart's right edge has moved inside the wcRecordView.
+				if (wcRecordView.childWcRecordViews.length > 0 && this._lastTimelineOverviewEnd < endTime && this._timelineOverviewEnd >= startTime) {
+					this._revealRecordsFromRight(wcRecordView.childWcRecordViews);
+				}
+				// Show wcRecordView if chart's right edge has passed over wcRecordView's left edge. 
+				if (this._lastTimelineOverviewEnd < startTime && this._timelineOverviewEnd >= startTime) {
+					wcRecordView.show();
+					this._addBackgroundRow();
+				}
+			});
+		},
+		
 		_eventStates: {
 			idle: {
 				start: function (event) {

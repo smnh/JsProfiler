@@ -13,6 +13,9 @@ WaterfallChart.WCRecordView = (function () {
 		this.childWcRecordViews = [];
 		this.delegate = null;
 		
+		this.start = null;
+		this.asyncDuration = null;
+		
 		this._generateRecordNameElement(data.name);
 		this._generateRecordElement(data.hasChildren, data.hasAsyncDescendants);
 	}
@@ -25,28 +28,32 @@ WaterfallChart.WCRecordView = (function () {
 		 * Sets the start position of the record view by applying passed string to the margin-left property of the
 		 * record element.
 		 *
-		 * @param {String} start The start position of the record in form of CSS length of percentage.
+		 * @param {Number} start The start position of the record in percentage.
 		 */
 		setStartPosition: function (start) {
-			this.recordElm.style.marginLeft = start;
+			var startPercent = WaterfallChart.utils.percentWithDecimalPlaces(start, 5);
+			this.start = parseFloat(startPercent);
+			this.recordElm.style.marginLeft = startPercent;
 		},
 
 		setAsyncDuration: function (asyncDuration) {
+			var asyncDurationPercent = WaterfallChart.utils.percentWithDecimalPlaces(asyncDuration, 5);
+			this.asyncDuration = parseFloat(asyncDurationPercent);
 			if (this.asyncRecordBarElm !== null) {
-				this.asyncRecordBarElm.style.width = asyncDuration;
+				this.asyncRecordBarElm.style.width = asyncDurationPercent;
 			}
 		},
 
 		addChildRecordBar: function (start, duration) {
 			var childRecordBar = document.createElement("div");
 			childRecordBar.className = "jspwc_recordBar jspwc_childRecordBar";
-			childRecordBar.style.left = start;
-			childRecordBar.style.width = duration;
+			childRecordBar.style.left = WaterfallChart.utils.percentWithDecimalPlaces(start, 5);
+			childRecordBar.style.width = WaterfallChart.utils.percentWithDecimalPlaces(duration, 5);
 			this.selfRecordBarElm.parentNode.insertBefore(childRecordBar, this.selfRecordBarElm);
 		},
 
 		setSelfDuration: function (selfDuration) {
-			this.selfRecordBarElm.style.width = selfDuration;
+			this.selfRecordBarElm.style.width = WaterfallChart.utils.percentWithDecimalPlaces(selfDuration, 5);
 		},
 
 		_generateRecordNameElement: function (recordName) {
@@ -124,7 +131,17 @@ WaterfallChart.WCRecordView = (function () {
 				childWcRecordView.recordNameContainerElm.parentNode.removeChild(childWcRecordView.recordNameContainerElm);
 			}
 		},
-
+		
+		hide: function() {
+			this.recordContainerElm.style.display = "none";
+			this.recordNameContainerElm.style.display = "none";
+		},
+		
+		show: function() {
+			this.recordContainerElm.style.display = "";
+			this.recordNameContainerElm.style.display = "";
+		},
+		
 		unfold: function() {
 			this.folded = false;
 			this.foldHandleElm.className = "jspwc_foldHandleUnfolded";

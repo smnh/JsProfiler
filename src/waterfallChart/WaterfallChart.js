@@ -1,8 +1,7 @@
 var WaterfallChart = (function () {
 
 	var styleElement = null,
-		dev = true,
-		utils;
+		dev = true;
 
 	/**
 	 * A Waterfall Chart showing JavaScript Profiling Tool records.
@@ -203,8 +202,8 @@ var WaterfallChart = (function () {
 			
 			cpuTimeOverviewRecordBarElm = document.createElement("div");
 			cpuTimeOverviewRecordBarElm.className = "jspwc_recordBar jspwc_cpuTimeOverviewRecordBar";
-			cpuTimeOverviewRecordBarElm.style.left = utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces);
-			cpuTimeOverviewRecordBarElm.style.width = utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces);
+			cpuTimeOverviewRecordBarElm.style.left = WaterfallChart.utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces);
+			cpuTimeOverviewRecordBarElm.style.width = WaterfallChart.utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces);
 			
 			return cpuTimeOverviewRecordBarElm;
 		},
@@ -221,7 +220,7 @@ var WaterfallChart = (function () {
 		},
 		
 		wcRecordViewForIndexPath: function(indexPath, async) {
-			var wcRecord, wcRecordView, i, asyncTime, decimalPlaces = 5;
+			var wcRecord, wcRecordView, i, asyncTime;
 			
 			wcRecord = this._wcRecordForIndexPath(indexPath, async);
 			wcRecordView = new WaterfallChart.WCRecordView({
@@ -231,26 +230,20 @@ var WaterfallChart = (function () {
 				name: wcRecord.name
 			});
 
-			wcRecordView.setStartPosition(utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces));
-			wcRecordView.setAsyncDuration(utils.percentWithDecimalPlaces(wcRecord.asyncDuration / this._totalDuration, decimalPlaces));
-			wcRecordView.addChildRecordBar(
-				utils.percentWithDecimalPlaces(wcRecord.start / this._totalDuration, decimalPlaces),
-				utils.percentWithDecimalPlaces(wcRecord.duration / this._totalDuration, decimalPlaces)
-			);
+			wcRecordView.setStartPosition(wcRecord.start / this._totalDuration);
+			wcRecordView.setAsyncDuration(wcRecord.asyncDuration / this._totalDuration);
+			wcRecordView.addChildRecordBar(wcRecord.start / this._totalDuration, wcRecord.duration / this._totalDuration);
 			for (i = 0; i < wcRecord.asyncChildrenTimes.length; i++) {
 				asyncTime = wcRecord.asyncChildrenTimes[i];
-				wcRecordView.addChildRecordBar(
-					utils.percentWithDecimalPlaces(asyncTime.start / this._totalDuration, decimalPlaces),
-					utils.percentWithDecimalPlaces(asyncTime.duration / this._totalDuration, decimalPlaces)
-				);
+				wcRecordView.addChildRecordBar(asyncTime.start / this._totalDuration, asyncTime.duration / this._totalDuration);
 			}
-			wcRecordView.setSelfDuration(utils.percentWithDecimalPlaces(wcRecord.self / this._totalDuration, decimalPlaces));
+			wcRecordView.setSelfDuration(wcRecord.self / this._totalDuration);
 
 			return wcRecordView;
 		}
 	};
 	
-	utils = {
+	WaterfallChart.utils = {
 		percentWithDecimalPlaces: function(number, decimalPlaces) {
 			var multiplier = Math.pow(10, decimalPlaces);
 			number = number * 100;
