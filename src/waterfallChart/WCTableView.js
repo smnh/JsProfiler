@@ -11,7 +11,8 @@ WaterfallChart.WCTableView = (function(){
 
 		this.dataSource = null;
 		this.delegate = null;
-
+		
+		this._asyncRecords = true;
 		this._element = ancestorElement.querySelector(".jspwc_table");
 		
 		this._elements = {};
@@ -22,6 +23,7 @@ WaterfallChart.WCTableView = (function(){
 		this._elements.moveHandle = this._elements.header.querySelector(".jspwc_moveHandle");
 		this._elements.maximizeHandle = this._elements.header.querySelector(".jspwc_maximizeHandle");
 		this._elements.closeHandle = this._elements.header.querySelector(".jspwc_closeHandle");
+		this._elements.asyncRecordsHandle = this._elements.header.querySelector(".jspwc_asyncRecordsHandle");
 		this._elements.cpuTimeOverview = this._elements.header.querySelector(".jspwc_cpuTimeOverview");
 		
 		this._elements.bodyOverlays = this._element.querySelector(".jspwc_bodyOverlays");
@@ -120,10 +122,10 @@ WaterfallChart.WCTableView = (function(){
 			}
 			
 			if (typeof this.dataSource.numberOfChildWcRecordViewsForIndexPath === "function" && typeof this.dataSource.wcRecordViewForIndexPath === "function") {
-				numberOfRootRecords = this.dataSource.numberOfChildWcRecordViewsForIndexPath(null, true);
+				numberOfRootRecords = this.dataSource.numberOfChildWcRecordViewsForIndexPath(null, this._asyncRecords);
 				for (i = 0; i < numberOfRootRecords; i++) {
 					indexPath = [i];
-					wcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, true);
+					wcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, this._asyncRecords);
 					wcRecordView.indexPath = indexPath;
 					wcRecordView.delegate = this;
 					
@@ -131,7 +133,13 @@ WaterfallChart.WCTableView = (function(){
 					this._elements.records.appendChild(wcRecordView.recordContainerElm);
 					this._elements.recordNames.appendChild(wcRecordView.recordNameContainerElm);
 
-					this._addBackgroundRow();
+					// While reloading data make sure that root wcRecordViews are within the chart's viewable area.
+					// If they are add a background row, otherwise hide them.
+					if (this._isWcRecordViewVisible(wcRecordView)) {
+						this._addBackgroundRow();
+					} else {
+						wcRecordView.hide();
+					}
 
 					if (wcRecordView.folded === false) {
 						this._unfoldWCRecordView(wcRecordView);
@@ -140,6 +148,7 @@ WaterfallChart.WCTableView = (function(){
 			}
 			
 			if (typeof this.dataSource.numberOfChildWcRecordViewsForIndexPath === "function") {
+				// For CPU Time Overview always use async=false flag to show all stack level 0 records.
 				numberOfRootRecords = this.dataSource.numberOfChildWcRecordViewsForIndexPath(null, false);
 				for (i = 0; i < numberOfRootRecords; i++) {
 					this._elements.cpuTimeOverview.appendChild(this.dataSource.cpuTimeOverviewRecordBarElementForIndex(i));
@@ -150,11 +159,11 @@ WaterfallChart.WCTableView = (function(){
 		_unfoldWCRecordView: function (wcRecordView) {
 			var numberOfChildWcRecordViews, childWcRecordView, i, indexPath;
 
-			numberOfChildWcRecordViews = this.dataSource.numberOfChildWcRecordViewsForIndexPath(wcRecordView.indexPath, true);
+			numberOfChildWcRecordViews = this.dataSource.numberOfChildWcRecordViewsForIndexPath(wcRecordView.indexPath, this._asyncRecords);
 
 			for (i = 0; i < numberOfChildWcRecordViews; i++) {
 				indexPath = wcRecordView.indexPath.concat(i);
-				childWcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, true);
+				childWcRecordView = this.dataSource.wcRecordViewForIndexPath(indexPath, this._asyncRecords);
 				childWcRecordView.indexPath = indexPath;
 				childWcRecordView.delegate = this;
 
@@ -195,7 +204,7 @@ WaterfallChart.WCTableView = (function(){
 					this._foldWCRecordView(childWcRecordView);
 				}
 			}
-
+			
 			wcRecordView.removeAllChildWcRecordView();
 		},
 
@@ -213,6 +222,7 @@ WaterfallChart.WCTableView = (function(){
 			this._elements.moveHandle.addEventListener("mousedown", this, false);
 			this._elements.maximizeHandle.addEventListener("click", this, false);
 			this._elements.closeHandle.addEventListener("click", this, false);
+			this._elements.asyncRecordsHandle.addEventListener("click", this, false);
 		},
 
 		_updateGridlines: function () {
@@ -401,6 +411,16 @@ WaterfallChart.WCTableView = (function(){
 				}
 			});
 		},
+
+		_toggleAsyncRecords: function () {
+			if (this._asyncRecords) {
+				this._elements.asyncRecordsHandle.className = this._elements.asyncRecordsHandle.className.replace("jspwc_asyncRecordsHandle", "jspwc_nonAsyncRecordsHandle");
+			} else {
+				this._elements.asyncRecordsHandle.className = this._elements.asyncRecordsHandle.className.replace("jspwc_nonAsyncRecordsHandle", "jspwc_asyncRecordsHandle");
+			}
+			this._asyncRecords = !this._asyncRecords;
+			this.reloadData();
+		},
 		
 		_eventStates: {
 			idle: {
@@ -460,6 +480,8 @@ WaterfallChart.WCTableView = (function(){
 						if (this.delegate && typeof this.delegate.wcTableViewDidClickClose === "function") {
 							this.delegate.wcTableViewDidClickClose();
 						}
+					} else if (event.target === this._elements.asyncRecordsHandle) {
+						this._toggleAsyncRecords();
 					}
 				}
 			},
@@ -536,7 +558,7 @@ WaterfallChart.WCTableView = (function(){
 		wcRecordViewFolded: function (wcRecordView) {
 			this._foldWCRecordView(wcRecordView);
 			if (this.delegate && typeof this.delegate.wcTableViewDidFoldedWcRecordViewAtIndexPath === "function") {
-				this.delegate.wcTableViewDidFoldedWcRecordViewAtIndexPath(wcRecordView.indexPath, true);
+				this.delegate.wcTableViewDidFoldedWcRecordViewAtIndexPath(wcRecordView.indexPath, this._asyncRecords);
 			}
 		},
 
@@ -546,7 +568,7 @@ WaterfallChart.WCTableView = (function(){
 		wcRecordViewUnfolded: function (wcRecordView) {
 			this._unfoldWCRecordView(wcRecordView);
 			if (this.delegate && typeof this.delegate.wcTableViewDidUnfoldedWcRecordViewAtIndexPath === "function") {
-				this.delegate.wcTableViewDidUnfoldedWcRecordViewAtIndexPath(wcRecordView.indexPath, true);
+				this.delegate.wcTableViewDidUnfoldedWcRecordViewAtIndexPath(wcRecordView.indexPath, this._asyncRecords);
 			}
 		}
 	};

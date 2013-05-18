@@ -224,18 +224,20 @@ var WaterfallChart = (function () {
 			
 			wcRecord = this._wcRecordForIndexPath(indexPath, async);
 			wcRecordView = new WaterfallChart.WCRecordView({
-				hasChildren: wcRecord.allChildren.length > 0,
-				hasAsyncDescendants: wcRecord.asyncChildrenTimes.length > 0,
+				hasChildren: async ? wcRecord.allChildren.length > 0 : wcRecord.children.length,
+				hasAsyncDescendants: async ? wcRecord.asyncChildrenTimes.length > 0 : false,
 				folded: wcRecord.folded,
 				name: wcRecord.name
 			});
 
 			wcRecordView.setStartPosition(wcRecord.start / this._totalDuration);
-			wcRecordView.setAsyncDuration(wcRecord.asyncDuration / this._totalDuration);
+			wcRecordView.setAsyncDuration(async ? wcRecord.asyncDuration / this._totalDuration : wcRecord.duration / this._totalDuration);
 			wcRecordView.addChildRecordBar(wcRecord.start / this._totalDuration, wcRecord.duration / this._totalDuration);
-			for (i = 0; i < wcRecord.asyncChildrenTimes.length; i++) {
-				asyncTime = wcRecord.asyncChildrenTimes[i];
-				wcRecordView.addChildRecordBar(asyncTime.start / this._totalDuration, asyncTime.duration / this._totalDuration);
+			if (async) {
+				for (i = 0; i < wcRecord.asyncChildrenTimes.length; i++) {
+					asyncTime = wcRecord.asyncChildrenTimes[i];
+					wcRecordView.addChildRecordBar(asyncTime.start / this._totalDuration, asyncTime.duration / this._totalDuration);
+				}
 			}
 			wcRecordView.setSelfDuration(wcRecord.self / this._totalDuration);
 

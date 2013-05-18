@@ -113,6 +113,16 @@
     cursor: move;
 }
 
+.jspwc_asyncRecordsHandle {
+    background-size: 12px 12px;
+    background-image: url("images/async-records-icon.png");
+}
+
+.jspwc_nonAsyncRecordsHandle {
+    background-size: 12px 12px;
+    background-image: url("images/non-async-records-icon.png");
+}
+
 .jspwc_headerRow {
     position: relative;
     margin-left: 20px;
