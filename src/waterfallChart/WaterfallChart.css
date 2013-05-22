@@ -43,6 +43,16 @@
     background-color: #ffffff;
 }
 
+.jspwc_columnResizeHandle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 195px;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 1;
+}
+
 .jspwc_leftColumn {
     position: absolute;
     width: 199px;

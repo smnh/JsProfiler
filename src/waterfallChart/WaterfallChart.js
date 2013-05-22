@@ -1,6 +1,7 @@
 var WaterfallChart = (function () {
 
 	var styleElement = null,
+		styleSheet = null,
 		dev = true;
 
 	/**
@@ -41,21 +42,31 @@ var WaterfallChart = (function () {
 		},
 
 		_addStyleElement: function () {
-			var css, cssTextNode;
+			var css, cssTextNode, i;
 
-			if (styleElement !== null || dev) {
+			if (styleElement !== null) {
 				return;
 			}
-
-			css = "__CSS__";
-
-			cssTextNode = document.createTextNode(css);
-
-			styleElement = document.createElement("style");
-			styleElement.type = "text/css";
-			styleElement.appendChild(cssTextNode);
-
-			document.getElementsByTagName("head")[0].appendChild(styleElement);
+			
+			if (!dev) {
+				css = "__CSS__";
+	
+				cssTextNode = document.createTextNode(css);
+	
+				styleElement = document.createElement("style");
+				styleElement.type = "text/css";
+				styleElement.id = "jspwc_css";
+				styleElement.appendChild(cssTextNode);
+	
+				document.getElementsByTagName("head")[0].appendChild(styleElement);
+			}
+			
+			for (i = document.styleSheets.length - 1; i >= 0; i--) {
+				if (document.styleSheets[i].ownerNode.id === "jspwc_css") {
+					styleSheet = document.styleSheets[i];
+					break;
+				}
+			}
 		},
 		
 		/**
@@ -250,6 +261,33 @@ var WaterfallChart = (function () {
 			var multiplier = Math.pow(10, decimalPlaces);
 			number = number * 100;
 			return (Math.round(number * multiplier) / multiplier) + "%";
+		},
+		cssRuleForSelector: function(selector) {
+			var i, cssRule = null;
+			if (styleSheet) {
+				for (i = 0; i < styleSheet.cssRules.length; i++) {
+					if (styleSheet.cssRules[i].cssText.indexOf(selector) > -1) {
+						cssRule = styleSheet.cssRules[i];
+						break;
+					}
+				}
+			}
+			return cssRule;
+		},
+		getCssRulePropertyValue: function(cssRule, property) {
+			var regExp, match;
+			regExp = new RegExp(property + "\\s*:\\s*([^;]*)");
+			match = regExp.exec(cssRule.cssText);
+			return match ? match[1] : null;
+		},
+		setCssRulePropertyValue: function(cssRule, property, value) {
+			var regExp;
+			if (cssRule.cssText.indexOf(property) > -1) {
+				regExp = new RegExp(property + "\\s*:[^;]*");
+				cssRule.cssText = cssRule.cssText.replace(regExp, property + ":" + value);
+			} else {
+				cssRule.cssText += property + ":" + value + ";";
+			}
 		}
 	};
 	

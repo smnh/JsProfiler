@@ -15,10 +15,16 @@ WaterfallChart.WCTableView = (function(){
 		this._asyncRecords = true;
 		this._element = ancestorElement.querySelector(".jspwc_table");
 		
-		this._elements = {};
+		this._cssRules = {};
 
-		this._elements.header = this._element.querySelector(".jspwc_header");
+		this._cssRules.leftColumn = WaterfallChart.utils.cssRuleForSelector(".jspwc_leftColumn");
+		this._cssRules.rightColumn = WaterfallChart.utils.cssRuleForSelector(".jspwc_rightColumn");
 		
+		this._elements = {};
+		
+		this._elements.columnResizeHandle = this._element.querySelector(".jspwc_columnResizeHandle");
+		
+		this._elements.header = this._element.querySelector(".jspwc_header");
 		this._elements.headerGridlinesContainer = this._elements.header.querySelector(".jspwc_headerGridlinesContainer");
 		this._elements.moveHandle = this._elements.header.querySelector(".jspwc_moveHandle");
 		this._elements.maximizeHandle = this._elements.header.querySelector(".jspwc_maximizeHandle");
@@ -62,6 +68,11 @@ WaterfallChart.WCTableView = (function(){
 		this._startEventPagePosition = null;
 		this._startEventSize = null;
 		this._startEventPosition = null;
+		this._startEventColumnResizeHandleLeft = null;
+		this._startEventBodyOverlaysLeft = null;
+		this._startEventLeftColumnWidth = null;
+		this._startEventRightColumnMarginLeft = null;
+		
 		this._attachEvents();
 	}
 	
@@ -92,9 +103,6 @@ WaterfallChart.WCTableView = (function(){
 
 			this._elements.cpuTimeOverview.style.marginRight = (scrollBarWidth + paddingRight) + "px";
 			
-			this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
-
-			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.timeline.style.right = scrollBarWidth + "px";
 			this._elements.headerGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
 			this._elements.recordGridlinesContainer.style.right = (scrollBarWidth + paddingRight) + "px";
@@ -223,6 +231,11 @@ WaterfallChart.WCTableView = (function(){
 			this._elements.maximizeHandle.addEventListener("click", this, false);
 			this._elements.closeHandle.addEventListener("click", this, false);
 			this._elements.asyncRecordsHandle.addEventListener("click", this, false);
+			if (this._cssRules.leftColumn && this._cssRules.rightColumn) {
+				this._elements.columnResizeHandle.addEventListener("mousedown", this, false);
+			} else {
+				console.warn("Could not get css rules of waterfall chart columns.");
+			}
 		},
 
 		_updateGridlines: function () {
@@ -232,6 +245,7 @@ WaterfallChart.WCTableView = (function(){
 				gridlineElm, gridlineLabelElm,
 				minGridlineSpace = 60;
 
+			this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 			numOfColumns = Math.floor(this._timelineOverviewWidth / minGridlineSpace);
 
 			if (numOfColumns < 1) {
@@ -447,6 +461,12 @@ WaterfallChart.WCTableView = (function(){
 							x: this._element.offsetLeft,
 							y: this._element.offsetTop
 						};
+					} else if (event.target === this._elements.columnResizeHandle) {
+						this._eventState = "columnResizeHandleGrabbed";
+						this._startEventColumnResizeHandleLeft = this._elements.columnResizeHandle.offsetLeft;
+						this._startEventBodyOverlaysLeft = this._elements.bodyOverlays.offsetLeft;
+						this._startEventLeftColumnWidth = parseInt(this._cssRules.leftColumn.style.width, 10);
+						this._startEventRightColumnMarginLeft = parseInt(this._cssRules.rightColumn.style.marginLeft, 10);
 					}
 				},
 				click: function(event) {
@@ -463,7 +483,6 @@ WaterfallChart.WCTableView = (function(){
 							this._element.style.top = 10 + "px";
 							this._element.style.width = (this._element.offsetParent.offsetWidth - margin * 2) + "px";
 							this._elements.scrollView.style.height = (this._element.offsetParent.offsetHeight - margin * 2 - this._elements.header.offsetHeight) + "px";
-							this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 							this._updateGridlines();
 							this._elements.maximizeHandle.className = this._elements.maximizeHandle.className.replace("jspwc_maximizeHandle", "jspwc_minimizeHandle");
 						} else {
@@ -471,7 +490,6 @@ WaterfallChart.WCTableView = (function(){
 							this._element.style.top = this._minimizedDimensionAndPosition.y + "px";
 							this._element.style.width = this._minimizedDimensionAndPosition.width + "px";
 							this._elements.scrollView.style.height = this._minimizedDimensionAndPosition.height + "px";
-							this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 							this._updateGridlines();
 							this._elements.maximizeHandle.className = this._elements.maximizeHandle.className.replace("jspwc_minimizeHandle", "jspwc_maximizeHandle");
 						}
@@ -490,13 +508,10 @@ WaterfallChart.WCTableView = (function(){
 					this._maximized = false;
 					this._element.style.width = (this._startEventSize.width + (event.pageX - this._startEventPagePosition.x)) + "px";
 					this._elements.scrollView.style.height = (this._startEventSize.height + (event.pageY - this._startEventPagePosition.y)) + "px";
-					this._timelineOverviewWidth = this._timelineOverview.getOffsetWidth();
 					this._updateGridlines();
 				},
 				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
+					this._removeDraggingEventsAndReturnToIdleState();
 				}
 			},
 			moveHandleGrabbed: {
@@ -506,13 +521,29 @@ WaterfallChart.WCTableView = (function(){
 					this._element.style.top = (this._startEventPosition.y + (event.pageY - this._startEventPagePosition.y)) + "px";
 				},
 				end: function () {
-					document.removeEventListener("mousemove", this, false);
-					document.removeEventListener("mouseup", this, false);
-					this._eventState = "idle";
+					this._removeDraggingEventsAndReturnToIdleState();
+				}
+			},
+			columnResizeHandleGrabbed: {
+				move: function () {
+					this._elements.columnResizeHandle.style.left = (this._startEventColumnResizeHandleLeft + (event.pageX - this._startEventPagePosition.x)) + "px";
+					this._elements.bodyOverlays.style.left = (this._startEventBodyOverlaysLeft + (event.pageX - this._startEventPagePosition.x)) + "px";
+					this._cssRules.leftColumn.style.width = this._startEventLeftColumnWidth + (event.pageX - this._startEventPagePosition.x) + "px";
+					this._cssRules.rightColumn.style.marginLeft = this._startEventRightColumnMarginLeft + (event.pageX - this._startEventPagePosition.x) + "px";
+					this._updateGridlines();
+				},
+				end: function () {
+					this._removeDraggingEventsAndReturnToIdleState();
 				}
 			}
 		},
-
+		
+		_removeDraggingEventsAndReturnToIdleState: function() {
+			document.removeEventListener("mousemove", this, false);
+			document.removeEventListener("mouseup", this, false);
+			this._eventState = "idle";
+		},
+		
 		handleEvent: function (event) {
 			var eventHandlerName;
 			switch (event.type) {
