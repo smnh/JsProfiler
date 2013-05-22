@@ -321,10 +321,13 @@
     background-color: #f2f2f2;
 }
 
+.jspwc_recordsWrapper {
+    padding: 19px 5px 0 20px;
+}
+
 .jspwc_records {
     position: relative;
     z-index: 2;
-    padding: 19px 5px 0 20px;
 }
 
 .jspwc_recordContainer {

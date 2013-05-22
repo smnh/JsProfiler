@@ -111,6 +111,7 @@ WaterfallChart.WCTableView = (function(){
 			this._elements.resizeHandle.style.height = (scrollBarWidth - 2) + "px";
 
 			this._updateGridlines();
+			this._updateRecords();
 		},
 		
 		reloadData: function() {
@@ -318,8 +319,6 @@ WaterfallChart.WCTableView = (function(){
 
 				this._numberOfGridlines = numOfGridlines;
 			}
-
-			this._updateRecords();
 		},
 
 		_updateGridlineTimes: function () {
@@ -334,13 +333,13 @@ WaterfallChart.WCTableView = (function(){
 				timeStr = (time === 0 ? "0" : utils.timeString(time));
 				this._elements.timelineGridlinesContainer.childNodes[i].childNodes[0].childNodes[0].nodeValue = timeStr;
 			}
-
-			this._updateRecords();
 		},
 
 		_updateRecords: function () {
-			this._elements.records.style.width = this._timelineOverviewWidth * 100 / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
-			this._elements.records.style.left = -this._timelineOverviewStart * this._timelineOverviewWidth / (this._timelineOverviewEnd - this._timelineOverviewStart) + "px";
+			var widthMultiplier = 100 / (this._timelineOverviewEnd - this._timelineOverviewStart);
+			
+			this._elements.records.style.width = (100 * widthMultiplier) + "%";
+			this._elements.records.style.left = (-1 * this._timelineOverviewStart * widthMultiplier) + "%";
 			
 			// Remove record rows outside of the chart view
 			
@@ -575,6 +574,7 @@ WaterfallChart.WCTableView = (function(){
 			this._timelineOverviewStart = timeline.getLeftHandlePosition();
 			this._timelineOverviewEnd = timeline.getRightHandlePosition();
 			this._updateGridlineTimes();
+			this._updateRecords();
 		},
 
 
